@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Othello Square</title>
+  </head>
+  <body>
+    <h1>Othello Square</h1>
+    <form>
+      <h2>Please login with your nickname</h2>
+      <label for="nickname">Nickname</label>
+      <input id="nickname" name="nickname" type="text" value="" autofocus />
+      <button type="submit">Login</button>
+    </form>
+    <h2 id="message"></h2>
+    <script>
+      const form = document.querySelector("form");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const nickname = formData.get("nickname");
+        const message = document.querySelector("#message");
+        message.textContent = "Welcome, Peter!";
+        form.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
