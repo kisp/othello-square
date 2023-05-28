@@ -2,8 +2,5 @@
 
 source "https://rubygems.org"
 
-# gem "rails"
-
-gem "rackup", "~> 2.1"
-
 gem "puma", "~> 6.2"
+gem "sinatra", "~> 3.0"

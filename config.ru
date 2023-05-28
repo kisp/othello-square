@@ -1,3 +1,2 @@
-run do |env|
-  [200, {}, ["Hello World"]]
-end
+require './app'
+run Sinatra::Application
