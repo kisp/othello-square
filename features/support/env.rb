@@ -14,4 +14,8 @@ Capybara.register_driver :selenium_chrome_headless_docker_friendly do |app|
   Capybara::Selenium::Driver.new(app, browser: :chrome, options: browser_options)
 end
 
-Capybara.javascript_driver = :selenium_chrome_headless_docker_friendly
+if ENV["GITLAB_CI"]
+  Capybara.javascript_driver = :selenium_chrome_headless_docker_friendly
+else
+  Capybara.javascript_driver = :selenium_chrome
+end
