@@ -4,7 +4,7 @@ test:
 test-all:
 	bundle exec cucumber --order random
 
-PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile'
+PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile\|fly.toml\|Dockerfile\|\.sh\|\.rspec\|\.gitignore'
 
 prettier:
 	git ls-files \
