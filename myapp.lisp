@@ -39,17 +39,19 @@
     (lambda (&rest args)
       (m "div"
          (m "h1" (m "a" (list :href "/") "Othello Square"))
-         (m "h2" "Please login with your nickname")
-         (m "form"
-            (list
-             :onsubmit
-             (lambda (event)
-               ((jscl::oget event "preventDefault"))
-               (let ((elt (jscl::js-inline "document.getElementById('nickname')")))
-                 (setq *nickname* (jscl::oget elt "value")))))
-            (m "label" (list :for "nickname") "Nickname")
-            (m "input" (list :id "nickname"))
-            (m "button" "Login"))
+         (unless *nickname*
+           (jscl::make-new #j:Array
+            (m "h2" "Please login with your nickname")
+            (m "form"
+               (list
+                :onsubmit
+                (lambda (event)
+                  ((jscl::oget event "preventDefault"))
+                  (let ((elt (jscl::js-inline "document.getElementById('nickname')")))
+                    (setq *nickname* (jscl::oget elt "value")))))
+               (m "label" (list :for "nickname") "Nickname")
+               (m "input" (list :id "nickname"))
+               (m "button" "Login"))))
          (when *nickname*
            (m "div#message" (format nil "Welcome, ~A!" *nickname*))))))))
 
