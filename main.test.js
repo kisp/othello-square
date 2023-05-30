@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/dom";
 import m from "mithril";
 
-import myapp from "./myapp";
+import myapp from "./public/myapp";
 const { exports_for_js } = myapp;
 const { myinit, fact, getBoolFromJs, maxViaJsInline } = exports_for_js();
 
