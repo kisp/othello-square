@@ -36,7 +36,8 @@
   (plist2object
    (list :view (lambda (&rest args)
                  (m "div"
-                    (m "h1" "Cheesecakes: " (m "span" (format nil "~A" *count*)))
+                    (m "h1" "Othello Square")
+                    (m "h3" "Cheesecakes: " (m "span" (format nil "~A" *count*)))
                     (m "button"
                        (list :onclick (lambda (event)
                                         (#j:console:log "button was clicked")

@@ -1,4 +1,4 @@
-test: test-cucumber jscl-build-then-test
+test: jscl-build-app test-cucumber test-jscl
 
 test-cucumber:
 	bundle exec cucumber --tags "not @slow"
@@ -7,7 +7,7 @@ test-cucumber-all:
 	bundle exec cucumber --order random
 
 dev:
-	bundle exec rackup
+	bundle exec rackup -p 3030
 
 PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile\|fly.toml\|Dockerfile\|\.sh\|\.rspec\|\.gitignore'
 
