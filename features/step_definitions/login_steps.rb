@@ -13,6 +13,11 @@ When("I login as {string}") do |nickname|
   click_button("Login")
 end
 
+When('I login as {string} by hitting enter') do |nickname|
+  fill_in("Nickname", with: nickname)
+  find('#nickname').native.send_keys(:return)
+end
+
 Then("I see the welcome message {string}") do |message|
   expect(page).to have_css("#message", text: message)
 end

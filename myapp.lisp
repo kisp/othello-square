@@ -40,15 +40,16 @@
       (m "div"
          (m "h1" (m "a" (list :href "/") "Othello Square"))
          (m "h2" "Please login with your nickname")
-         (m "label" (list :for "nickname") "Nickname")
-         (m "input" (list :id "nickname"))
-         (m "button"
+         (m "form"
             (list
-             :onclick
+             :onsubmit
              (lambda (event)
+               ((jscl::oget event "preventDefault"))
                (let ((elt (jscl::js-inline "document.getElementById('nickname')")))
                  (setq *nickname* (jscl::oget elt "value")))))
-            "Login")
+            (m "label" (list :for "nickname") "Nickname")
+            (m "input" (list :id "nickname"))
+            (m "button" "Login"))
          (when *nickname*
            (m "div#message" (format nil "Welcome, ~A!" *nickname*))))))))
 
