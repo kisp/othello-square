@@ -1,0 +1,15 @@
+image: kisp/ruby-chromedriver
+
+cache:
+  paths:
+    - vendor/bundle
+
+before_script:
+  - ruby -v
+  - bundle config set --local deployment true # Install dependencies into ./vendor/bundle
+  - bundle install -j $(nproc)
+
+test:
+  script:
+    - bundle exec rspec
+    - bundle exec cucumber --color --order random --tags "not @slow"
