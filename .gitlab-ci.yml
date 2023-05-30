@@ -9,6 +9,7 @@ before_script:
   - bundle config set --local deployment true # Install dependencies into ./vendor/bundle
   - bundle install -j $(nproc)
 
-rspec:
+test:
   script:
     - bundle exec rspec
+    - bundle exec cucumber --color --order random --tags "not @slow"
