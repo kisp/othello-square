@@ -2,18 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Othello Square</title>
-    <link href="/app.css" rel="stylesheet" />
+    <title>Document</title>
   </head>
   <body>
-    <h1>Othello Square</h1>
-    <form>
-      <h2>Please login with your nickname</h2>
-      <label for="nickname">Nickname</label>
-      <input id="nickname" name="nickname" type="text" value="" autofocus />
-      <button type="submit">Login</button>
-    </form>
-    <h2 id="message"></h2>
-    <script src="/app.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "mithril": "https://cdn.skypack.dev/mithril@2.2.2"
+        }
+      }
+    </script>
+
+    <div id="app"></div>
+
+    <script type="module">
+      import myapp from "./myapp.js";
+      const { exports_for_js } = myapp;
+      const { myinit } = exports_for_js();
+
+      myinit();
+    </script>
   </body>
 </html>
