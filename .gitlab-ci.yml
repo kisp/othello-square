@@ -5,6 +5,8 @@ cache:
     - vendor/bundle
 
 before_script:
+  - node -v
+  - npm -v
   - npm ci
   - ruby -v
   - bundle config set --local deployment true # Install dependencies into ./vendor/bundle
