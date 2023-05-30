@@ -4,6 +4,9 @@ test:
 test-all:
 	bundle exec cucumber --order random
 
+dev:
+	bundle exec rackup
+
 PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile\|fly.toml\|Dockerfile\|\.sh\|\.rspec\|\.gitignore'
 
 prettier:
