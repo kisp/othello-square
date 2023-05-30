@@ -47,8 +47,11 @@
                 :onsubmit
                 (lambda (event)
                   ((jscl::oget event "preventDefault"))
-                  (let ((elt (jscl::js-inline "document.getElementById('nickname')")))
-                    (setq *nickname* (jscl::oget elt "value")))))
+                  (let* ((elt (jscl::js-inline "document.getElementById('nickname')"))
+                         (nickname (jscl::oget elt "value")))
+                    (unless (or (equal nickname "")
+                                (every (lambda (char) (char= char #\space)) nickname))
+                      (setq *nickname* nickname)))))
                (m "label" (list :for "nickname") "Nickname")
                (m "input" (list :id "nickname"))
                (m "button" "Login"))))
