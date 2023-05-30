@@ -13,9 +13,9 @@ When("I login as {string}") do |nickname|
   click_button("Login")
 end
 
-When('I login as {string} by hitting enter') do |nickname|
+When("I login as {string} by hitting enter") do |nickname|
   fill_in("Nickname", with: nickname)
-  find('#nickname').native.send_keys(:return)
+  find("#nickname").native.send_keys(:return)
 end
 
 Then("I see the welcome message {string}") do |message|
