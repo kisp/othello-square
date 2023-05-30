@@ -10,6 +10,8 @@ gem "puma", "~> 6.2"
 gem "sinatra", "~> 3.0"
 
 group :development do
+  gem "capybara", "~> 3.39"
+  gem "selenium-webdriver", "~> 4.9"
   gem "cucumber", "~> 8.0"
   gem "rspec", "~> 3.12"
   gem "service_manager", "~> 0.6.4"
