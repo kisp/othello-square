@@ -1,0 +1,14 @@
+image: ruby:3.2.2
+
+cache:
+  paths:
+    - vendor/bundle
+
+before_script:
+  - ruby -v
+  - bundle config set --local deployment true # Install dependencies into ./vendor/bundle
+  - bundle install -j $(nproc)
+
+rspec:
+  script:
+    - bundle exec rspec
