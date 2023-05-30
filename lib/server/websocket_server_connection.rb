@@ -11,7 +11,7 @@ class WebsocketServerConnection
 
     ws.on :open do |event|
       dbg ["SERVER", :open]
-      send_message(%i[please_tell_me_who_you_are dummy])
+      send_message([:please_tell_me_who_you_are])
     end
 
     ws.on :message do |event|
@@ -31,10 +31,11 @@ class WebsocketServerConnection
   end
 
   def handle_message(message)
+    message.push(nil) if message.length == 1
     case message
     in :login, user
       handle_login(user)
-    in :get_list_of_users, "dummy"
+    in :get_list_of_users, _
       handle_get_list_of_users
     else
       raise "message not matched: #{message.inspect}"
@@ -48,7 +49,7 @@ class WebsocketServerConnection
 
   def handle_login(user)
     self.user = user
-    send_message(%i[logged_in dummy])
+    send_message([:logged_in])
 
     # @on_login.each { |proc| proc.call }
     # tell_this_user_about_existing_users
