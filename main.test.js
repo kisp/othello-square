@@ -1,24 +1,28 @@
 import { screen } from "@testing-library/dom";
+import userEvent from "@testing-library/user-event";
 import m from "mithril";
 
 import myapp from "./public/myapp";
 const { exports_for_js } = myapp;
 const { myinit, fact, getBoolFromJs, maxViaJsInline } = exports_for_js();
 
-test("uses jest-dom", () => {
+test("uses jest-dom", async () => {
+  const user = userEvent.setup();
   window.document.body.innerHTML = '<div id="app"></div>';
 
   myinit();
 
   expect(
-    screen.getByRole("heading", { name: "Cheesecakes: 0" })
+    screen.getByRole("heading", { name: "Othello Square" })
   ).toBeInTheDocument();
 
-  screen.getByRole("button", { name: "Add cheesecake" }).click();
+  const nicknameInput = document.getElementById("nickname");
+  await user.type(nicknameInput, "Peter");
+  screen.getByRole("button", { name: "Login" }).click();
   m.redraw.sync();
 
   expect(
-    screen.getByRole("heading", { name: "Cheesecakes: 1" })
+    screen.getByTestId("message", { name: "Cheesecakes: 1" })
   ).toBeInTheDocument();
 });
 

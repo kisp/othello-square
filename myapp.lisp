@@ -56,7 +56,9 @@
                (m "input" (list :id "nickname"))
                (m "button" "Login"))))
          (when *nickname*
-           (m "div#message" (format nil "Welcome, ~A!" *nickname*))))))))
+           (m "div#message"
+              (list :data-testid "message")
+              (format nil "Welcome, ~A!" *nickname*))))))))
 
 (defun myinit ()
   (let ((elt (jscl::js-inline "document.getElementById('app')")))
