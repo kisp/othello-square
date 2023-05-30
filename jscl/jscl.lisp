@@ -219,7 +219,7 @@ exports_for_js: internals.intern(\"EXPORTS-FOR-JS\", \"MYAPP\").fvalue
         (*default-pathname-defaults* *base-directory*))
     (setq *environment* (make-lexenv))
     (with-compilation-environment
-      (with-open-file (out (merge-pathnames "../jscl.js" *base-directory*)
+      (with-open-file (out (merge-pathnames "../public/jscl.js" *base-directory*)
                            :direction :output
                            :if-exists :supersede)
         ;; (format out "(function(){~%")
