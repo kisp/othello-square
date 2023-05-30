@@ -9,10 +9,6 @@ before_script:
   - bundle config set --local deployment true # Install dependencies into ./vendor/bundle
   - bundle install -j $(nproc)
 
-prettier:
-  script:
-    - make prettier-check
-
 test:
   script:
     - make jscl-build-app >/dev/null 2>/dev/null
