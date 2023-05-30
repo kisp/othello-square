@@ -5,6 +5,7 @@ end
 
 Given("I am asked to login with my nickname") do
   expect(page).to have_css("h2", text: "Please login with your nickname")
+  expect(page).not_to have_css("#message")
 end
 
 When("I login as {string}") do |nickname|

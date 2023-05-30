@@ -49,7 +49,8 @@
                (let ((elt (jscl::js-inline "document.getElementById('nickname')")))
                  (setq *nickname* (jscl::oget elt "value")))))
             "Login")
-         (m "div#message" (format nil "Welcome, ~A!" *nickname*)))))))
+         (when *nickname*
+           (m "div#message" (format nil "Welcome, ~A!" *nickname*))))))))
 
 (defun myinit ()
   (let ((elt (jscl::js-inline "document.getElementById('app')")))
