@@ -1,7 +1,9 @@
-test:
+test: test-cucumber jscl-build-and-test
+
+test-cucumber:
 	bundle exec cucumber --tags "not @slow"
 
-test-all:
+test-cucumber-all:
 	bundle exec cucumber --order random
 
 dev:
@@ -22,6 +24,11 @@ prettier-check:
 ######################################################################
 ###                             jscl                               ###
 ######################################################################
+
+jscl-build-and-test: jscl-build-app test-jscl
+
+test-jscl:
+	npx jest
 
 jscl-bootstrap:
 	cd jscl && sbcl --noinform --disable-ldb --lose-on-corruption --end-runtime-options \
