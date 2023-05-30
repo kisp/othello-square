@@ -3,7 +3,7 @@ FROM ruby:${RUBY_VERSION}
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV CHROMIUM_DRIVER_VERSION 109.0.5414.74
-ENV CHROME_VERSION 109.0.5414.119-1
+ENV CHROME_VERSION 113.0.5672.126-1
 
 # Install dependencies & Chrome
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
