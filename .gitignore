@@ -1,2 +1,7 @@
 vendor
 .envrc.local
+jscl/jscl-deno.js
+jscl/jscl-node.js
+jscl/jscl-web.js
+myapp.js
+jscl.js
