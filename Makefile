@@ -42,3 +42,10 @@ jscl-build-app:
 	  --load jscl.lisp --eval '(jscl:bootstrap)' \
 	  --eval '(jscl:compile-application (list "../m-macro.lisp" "../myapp.lisp") "../public/myapp.js")' \
 	  --end-toplevel-options
+
+######################################################################
+###                            deploy                              ###
+######################################################################
+
+deploy: jscl-build-app
+	flyctl deploy
