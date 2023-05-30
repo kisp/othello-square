@@ -1,5 +1,5 @@
 Given("that I visit the homepage") do
-  visit("https://othello-square.fly.dev")
+  visit(SERVER_HTTP_URL)
   expect(page).to have_css("h1", text: "Othello Square")
 end
 
