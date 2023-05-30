@@ -27,7 +27,7 @@ class WebsocketConnection
 
   def send_message(message)
     dbg_user ["====>", message]
-    ws.send(Marshal.dump(message))
+    ws.send(message.to_json)
   end
 
   def login
@@ -44,7 +44,7 @@ class WebsocketConnection
   end
 
   def get_list_of_users
-    send_message(%i[get_list_of_users dummy])
+    send_message([:get_list_of_users])
     wait_until(
       timeout: 1,
       message: "Waiting for other_users to be not nil",
@@ -68,8 +68,10 @@ class WebsocketConnection
     end
 
     ws.on :message do |event|
-      message = Marshal.restore(event.data)
+      message = JSON.parse(event.data)
       dbg_user [:message_received, message]
+      message[0] = message[0].to_sym
+      message.push(nil) if message.length == 1
 
       # these messages do not worry about last_message
       message_handled = true
@@ -87,9 +89,9 @@ class WebsocketConnection
         self.last_message = message
 
         case message
-        in :please_tell_me_who_you_are, :dummy
+        in :please_tell_me_who_you_are, _
           nothing_to_do
-        in :logged_in, :dummy
+        in :logged_in, _
           self.logged_in = true
         in :users_present, users
           self.other_users = users
@@ -102,7 +104,7 @@ class WebsocketConnection
       message: "Waiting for open WebsocketConnection for #{user}",
     ) { open }
 
-    prompt = %i[please_tell_me_who_you_are dummy]
+    prompt = [:please_tell_me_who_you_are, nil]
     wait_until(timeout: 3, message: "Waiting for server message (#{prompt})") do
       last_message == prompt
     end
