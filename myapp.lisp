@@ -3,7 +3,7 @@
 
 (in-package :myapp)
 
-(defvar *count* 0)
+(defvar *nickname* nil)
 
 (defun plist2object (plist)
   (let ((obj (jscl::new)))
@@ -34,16 +34,22 @@
 
 (defun app ()
   (plist2object
-   (list :view (lambda (&rest args)
-                 (m "div"
-                    (m "h1" "Othello Square")
-                    (m "h3" "Cheesecakes: " (m "span" (format nil "~A" *count*)))
-                    (m "button"
-                       (list :onclick (lambda (event)
-                                        (#j:console:log "button was clicked")
-                                        (incf *count*)
-                                        (#j:console:log "count is now: " *count*)))
-                       "Add cheesecake"))))))
+   (list
+    :view
+    (lambda (&rest args)
+      (m "div"
+         (m "h1" "Othello Square")
+         (m "h2" "Please login with your nickname")
+         (m "label" (list :for "nickname") "Nickname")
+         (m "input" (list :id "nickname"))
+         (m "button"
+            (list
+             :onclick
+             (lambda (event)
+               (let ((elt (jscl::js-inline "document.getElementById('nickname')")))
+                 (setq *nickname* (jscl::oget elt "value")))))
+            "Login")
+         (m "div#message" (format nil "Welcome, ~A!" *nickname*)))))))
 
 (defun myinit ()
   (let ((elt (jscl::js-inline "document.getElementById('app')")))
