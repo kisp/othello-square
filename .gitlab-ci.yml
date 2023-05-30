@@ -11,5 +11,6 @@ before_script:
 
 test:
   script:
+    - env
     - bundle exec rspec
     - bundle exec cucumber --color --order random --tags "not @slow"
