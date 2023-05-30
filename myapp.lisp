@@ -38,7 +38,7 @@
     :view
     (lambda (&rest args)
       (m "div"
-         (m "h1" "Othello Square")
+         (m "h1" (m "a" (list :href "/") "Othello Square"))
          (m "h2" "Please login with your nickname")
          (m "label" (list :for "nickname") "Nickname")
          (m "input" (list :id "nickname"))
