@@ -20,7 +20,7 @@
         const formData = new FormData(form);
         const nickname = formData.get("nickname");
         const message = document.querySelector("#message");
-        message.textContent = "Welcome, Peter!";
+        message.textContent = `Welcome, ${nickname}!`;
         form.style.display = "none";
       });
     </script>
