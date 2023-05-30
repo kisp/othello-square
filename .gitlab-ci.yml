@@ -5,6 +5,7 @@ cache:
     - vendor/bundle
 
 before_script:
+  - npm ci
   - ruby -v
   - bundle config set --local deployment true # Install dependencies into ./vendor/bundle
   - bundle install -j $(nproc)
@@ -14,3 +15,4 @@ test:
     - make jscl-build-app >/dev/null 2>/dev/null
     - bundle exec rspec
     - bundle exec cucumber --color --order random --tags "not @slow"
+    - npx jest
