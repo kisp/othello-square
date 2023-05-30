@@ -12,6 +12,6 @@ When("I login as {string}") do |nickname|
   click_button("Login")
 end
 
-Then("I see the welcome message {string}") do |string|
-  expect(page).to have_css("#message", text: "Welcome, Peter!")
+Then("I see the welcome message {string}") do |message|
+  expect(page).to have_css("#message", text: message)
 end
