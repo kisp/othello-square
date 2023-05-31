@@ -17,7 +17,7 @@ SERVER_WS_URL = "ws://localhost:9292/cable"
 SERVER_HTTP_URL = "http://localhost:9292/"
 SERVER_HTTP_RESET_URL = "http://localhost:9292/reset"
 
-DEBUG = ENV["DEBUG"]&.downcase == "true"
+DEBUG = ENV["DEBUGXX"]&.downcase == "true"
 
 Around("@em") do |scenario, block|
   EM.synchrony do
