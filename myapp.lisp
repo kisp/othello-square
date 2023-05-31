@@ -7,6 +7,7 @@
 
 (defvar *nickname* nil)
 (defvar *welcome-message* nil)
+(defvar *other-users* nil)
 
 (defun clog (&rest args)
   (apply #j:console:log args))
@@ -66,16 +67,24 @@
 (defun handle-message (message)
   (case (car message)
     (:please-tell-me-who-you-are
-     (let ((login-message `(:login ,*nickname*)))
-       (let ((login-message-json (format-message-as-json login-message)))
-         (websocket-send *ws* login-message-json))))
+     (websocket-send
+      *ws*
+      (format-message-as-json `(:login ,*nickname*))))
     (:logged-in
      (setq *nickname* (get-nickname-from-input-field)
            *welcome-message* (second message))
-     (m-redraw))
+     (websocket-send
+      *ws*
+      (format-message-as-json `(:get-list-of-users))))
+    (:users-present
+     (setq *other-users*
+           (map 'list #'jscl::js-to-lisp (second message))))
+    (:user-entered
+     (push (second message) *other-users*))
     (t
      (error "Don't know how to handle-message: ~S"
-            message))))
+            message)))
+  (m-redraw))
 
 (defun transform-message-head (message)
   (when message
@@ -162,7 +171,17 @@
            (m "div#message"
               (list :data-testid "message")
               ;; (format nil "Welcome, ~A!" *nickname*)
-              *welcome-message*)))))))
+              *welcome-message*))
+         (when *other-users*
+           (m "div"
+              (m "h2" "Online users")
+              (apply #'m
+                     "ol"
+                     (mapcar (lambda (user)
+                               (m "li"
+                                  (list :id (format nil "user_~A" user))
+                                  user))
+                             *other-users*)))))))))
 
 (defun app ()
   (plist2object
