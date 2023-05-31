@@ -17,3 +17,4 @@
       (message "==> %s" (car (read-from-string (cdr (assoc 'value result))))))))
 
 (global-set-key (kbd "H-p") 'paul/slime-eval-in-browser-and-redraw)
+(global-set-key (kbd "M-<return>") 'paul/slime-eval-in-browser-and-redraw)
