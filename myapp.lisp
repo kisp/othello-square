@@ -32,7 +32,7 @@
 (defun m-mount (elt component)
   (funcall (jscl::js-inline "m.mount") elt component))
 
-(defun app ()
+(defun app-aux (&rest args)
   (plist2object
    (list
     :view
@@ -41,24 +41,31 @@
          (m "h1" (m "a" (list :href "/") "Othello Square"))
          (unless *nickname*
            (jscl::make-new #j:Array
-            (m "h2" "Please login with your nickname")
-            (m "form"
-               (list
-                :onsubmit
-                (lambda (event)
-                  ((jscl::oget event "preventDefault"))
-                  (let* ((elt (jscl::js-inline "document.getElementById('nickname')"))
-                         (nickname (jscl::oget elt "value")))
-                    (unless (or (equal nickname "")
-                                (every (lambda (char) (char= char #\space)) nickname))
-                      (setq *nickname* nickname)))))
-               (m "label" (list :for "nickname") "Nickname")
-               (m "input" (list :id "nickname"))
-               (m "button" "Login"))))
+                           (m "h2" "Please login with your nickname")
+                           (m "form"
+                              (list
+                               :onsubmit
+                               (lambda (event)
+                                 ((jscl::oget event "preventDefault"))
+                                 (let* ((elt (jscl::js-inline "document.getElementById('nickname')"))
+                                        (nickname (jscl::oget elt "value")))
+                                   (unless (or (equal nickname "")
+                                               (every (lambda (char) (char= char #\space)) nickname))
+                                     (setq *nickname* nickname)))))
+                              (m "label" (list :for "nickname") "Nickname")
+                              (m "input" (list :id "nickname"))
+                              (m "button" "Login"))))
          (when *nickname*
            (m "div#message"
               (list :data-testid "message")
               (format nil "Welcome, ~A!" *nickname*))))))))
+
+(defun app ()
+  (plist2object
+   (list
+    :view
+    (lambda (&rest args)
+      (m (symbol-function 'app-aux))))))
 
 (defun myinit ()
   (let ((elt (jscl::js-inline "document.getElementById('app')")))
