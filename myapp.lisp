@@ -17,11 +17,6 @@
 (defun add-event-listener (obj event fn)
   ((jscl::oget obj "addEventListener") event fn))
 
-;; (add-event-listener (jscl::js-inline "document.querySelector('h2')")
-;;                     "click"
-;;                     (lambda (event)
-;;                       (#j:console:log event)))
-
 (defun remove-last-char (string)
   (subseq string 0 (1- (length string))))
 
@@ -58,19 +53,6 @@
 (defun close-websocket (ws)
   ((jscl::oget ws "close")))
 
-;; (setq *ws* (open-websocket "ws://localhost:4040/"
-;;                            :on-message (lambda (event)
-;;                                          (#j:console:log (jscl::oget event "data")))
-;;                            :on-close (lambda (event)
-;;                                        (#j:console:log "closed"))
-;;                            :log-each-event t))
-
-;; (list *ws*)
-
-;; (websocket-send *ws* "huhu")
-
-;; (close-websocket *ws*)
-
 (defun format-message-as-json (message)
   (#j:JSON:stringify
    (apply
@@ -82,13 +64,10 @@
     (mapcar #'jscl::lisp-to-js (cdr message)))))
 
 (defun handle-message (message)
-  (clog-lisp "handle-message" message)
   (case (car message)
     (:please-tell-me-who-you-are
      (let ((login-message `(:login ,*nickname*)))
-       (clog-lisp "I will tell you..." login-message)
        (let ((login-message-json (format-message-as-json login-message)))
-         (clog-lisp "login-message-json" login-message-json)
          (websocket-send *ws* login-message-json))))
     (:logged-in
      (setq *nickname* (get-nickname-from-input-field)
@@ -113,7 +92,7 @@
 
 (defun open-websocket-with-handlers ()
   (open-websocket (ws-url)
-                  :log-each-event t
+                  :log-each-event nil
                   :on-message
                   (lambda (event)
                     (handle-message
@@ -158,22 +137,11 @@
 
 (defun handle-login-submit (event)
   ((jscl::oget event "preventDefault"))
-  (clog "handle-login-submit")
   (let ((nickname (get-nickname-from-input-field)))
     (unless (or (equal nickname "")
                 (every (lambda (char) (char= char #\space)) nickname))
       (setq *nickname* nickname)
-      (setq *ws* (open-websocket-with-handlers))))
-  ;; (setq *ws* (open-websocket-with-handlers))
-  ;; (#j:console:log "hi there")
-  ;; (when *ws*
-  ;;   (close-websocket *ws*))
-  ;; (setq *ws* (open-websocket-with-handlers))
-  ;; (setq *nickname* (get-nickname-from-input-field))
-  ;; (setq *welcome-message* (format nil "Welcome, ~A!" (get-nickname-from-input-field)))
-  ;; (setq *nickname* (get-nickname-from-input-field))
-  ;; (setq *ws* (open-websocket-with-handlers))
-  )
+      (setq *ws* (open-websocket-with-handlers)))))
 
 (defun app-aux (&rest args)
   (plist2object
