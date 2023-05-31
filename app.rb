@@ -14,7 +14,7 @@ module Rack
   end
 end
 
-DEBUG = ENV["DEBUG"]&.downcase == "true"
+DEBUG = ENV["DEBUGXX"]&.downcase == "true"
 
 get "/" do
   send_file File.join(settings.public_folder, "index.html")
