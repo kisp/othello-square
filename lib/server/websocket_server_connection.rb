@@ -49,7 +49,7 @@ class WebsocketServerConnection
 
   def handle_login(user)
     self.user = user
-    send_message([:logged_in])
+    send_message([:logged_in, "Welcome, #{self.user}!"])
 
     # @on_login.each { |proc| proc.call }
     # tell_this_user_about_existing_users
