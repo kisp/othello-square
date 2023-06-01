@@ -1,4 +1,4 @@
-@em
+@backend @em
 Feature: Connect / login / list users interleavings
 
   Scenario: (b1 b2 b3 jA jB jC)

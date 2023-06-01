@@ -1,4 +1,4 @@
-@em
+@backend @em
 Feature: Two users can see each other
 
   Background:

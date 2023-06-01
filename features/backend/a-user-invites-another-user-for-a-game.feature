@@ -1,4 +1,4 @@
-@em
+@backend @em
 Feature: A user invites another user for a game
 
   Background:

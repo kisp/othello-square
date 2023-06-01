@@ -26,7 +26,7 @@ class WebsocketConnection
 
     connect
 
-    login if do_login
+    login_as(user) if do_login
   end
 
   def send_message(message)
@@ -34,7 +34,9 @@ class WebsocketConnection
     ws.send(message.to_json)
   end
 
-  def login
+  def login_as(nickname)
+    raise "oops! expected nickname == user" unless nickname == user
+
     send_message([:login, user])
 
     # self.logged_in = true
@@ -57,11 +59,22 @@ class WebsocketConnection
     self.last_message = nil
   end
 
+  def can_see_that_other_user_is_there!(other_user)
+    wait_until(
+      timeout: 1,
+      message: "#{user} wants to see #{other_user}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation:
+        lambda { expect(other_users).to include(other_user) },
+    ) { other_users.include?(other_user) }
+  end
+
   def invite_for_game(invitee)
     send_message([:invite_for_game, invitee])
   end
 
-  def game_invitation_from?(invitator)
+  def game_invitation_from!(invitator)
     message = [:game_invitation_from, invitator]
     wait_until(
       timeout: 1,
@@ -72,14 +85,13 @@ class WebsocketConnection
     ) { last_message == message }
 
     self.last_message = nil
-    true
   end
 
   def accept_game_invitation(invitator)
     send_message([:accept_game_invitation, invitator])
   end
 
-  def game_start_with?(other_user)
+  def game_start_received!(other_user)
     message = [:game_start_with, other_user]
     wait_until(
       timeout: 1,
@@ -91,7 +103,6 @@ class WebsocketConnection
     ) { last_message == message }
 
     self.last_message = nil
-    true
   end
 
   def inspect

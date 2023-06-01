@@ -1,4 +1,4 @@
-@em @slow
+@backend @em @slow
 Feature: Connect / login / list users interleavings for 3 users
 
   Scenario: (b1 b2 b3 jA jB jC pI pII pIII)
