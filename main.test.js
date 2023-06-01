@@ -4,7 +4,7 @@ import m from "mithril";
 
 import myapp from "./public/myapp";
 const { exports_for_js } = myapp;
-const { myinit, fact, getBoolFromJs, maxViaJsInline, runAllTestsJest } =
+const { mountApp, fact, getBoolFromJs, maxViaJsInline, runAllTestsJest } =
   exports_for_js();
 
 test("run all mini-fiveam tests", () => {
@@ -17,7 +17,7 @@ test("uses jest-dom", async () => {
   const user = userEvent.setup();
   window.document.body.innerHTML = '<div id="app"></div>';
 
-  myinit();
+  mountApp();
 
   expect(
     screen.getByRole("heading", { name: "Othello Square" })
