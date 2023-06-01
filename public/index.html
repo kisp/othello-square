@@ -19,9 +19,9 @@
     <script type="module">
       import myapp from "./myapp.js";
       const { exports_for_js } = myapp;
-      const { myinit, runAllTestsJest } = exports_for_js();
+      const { mountApp, runAllTestsJest } = exports_for_js();
 
-      myinit();
+      mountApp();
       window.runAllTestsJest = runAllTestsJest;
     </script>
     <script type="module">

@@ -145,7 +145,7 @@
     (lambda (&rest args)
       (m (symbol-function 'app-aux))))))
 
-(defun myinit ()
+(defun mount-app ()
   (let ((elt (jscl::js-inline "document.getElementById('app')")))
     ;; (jscl::oset "foo" elt "innerHTML")
     (m-mount elt (app))))
@@ -154,7 +154,7 @@
   (#j:console:log "exports-for-js called")
   (obj-literal
    :|runAllTestsJest| #'mini-fiveam:run-all-tests-jest
-   :myinit #'myinit
+   :|mountApp| #'mount-app
    :fact #'fact
    :|getBoolFromJs| #'get-bool-from-js
    :|maxViaJsInline| #'max-via-js-inline))
