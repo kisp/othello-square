@@ -9,42 +9,6 @@
 (defvar *welcome-message* nil)
 (defvar *other-users* nil)
 
-(defun add-event-listener (obj event fn)
-  ((jscl::oget obj "addEventListener") event fn))
-
-(defun ws-url ()
-  (format nil
-          "~A://~A/cable"
-          (ecase (intern (string-upcase (remove-last-char #j:document:location:protocol)) "KEYWORD")
-            (:http "ws")
-            (:https "wss"))
-          #j:document:location:host))
-
-(defun open-websocket (url &key on-close on-error on-message on-open log-each-event)
-  (let ((events '("close" "error" "message" "open"))
-        (ws (jscl::make-new #j:WebSocket (jscl::lisp-to-js url))))
-    (when log-each-event
-      (let ((handler (lambda (event)
-                       (#j:console:log event))))
-        (loop for event in events
-              when handler
-                do (add-event-listener ws event handler))))
-    (loop for event in events
-          for handler in (list on-close on-error on-message on-open)
-          when handler
-            do (add-event-listener ws event handler))
-    ws))
-
-(defun websocket-send (ws message)
-  ((jscl::oget ws "send")
-   (jscl::lisp-to-js
-    (if (stringp message)
-        message
-        (prin1-to-string message)))))
-
-(defun close-websocket (ws)
-  ((jscl::oget ws "close")))
-
 (defun format-message-as-json (message)
   (#j:JSON:stringify
    (apply
@@ -185,41 +149,6 @@
   (let ((elt (jscl::js-inline "document.getElementById('app')")))
     ;; (jscl::oset "foo" elt "innerHTML")
     (m-mount elt (app))))
-
-(defun fact (n)
-  (if (zerop n)
-      1
-      (* n (fact (1- n)))))
-
-(defun get-bool-from-js (x)
-  (ecase x
-    (1 (if (jscl::js-inline "true")
-           1
-           2))
-    (2 (if (jscl::js-inline "false")
-           1
-           2))))
-
-(defun max-via-js-inline (a b)
-  (let ((js-func (jscl::js-inline "Math.max")))
-    (funcall js-func a b)))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun transform-case (string)
-    (cond
-      ((notany #'lower-case-p string)
-       (string-downcase string))
-      ((notany #'upper-case-p string)
-       (string-upcase string))
-      (t string))))
-
-(defmacro obj-literal (&rest plist)
-  (let ((obj (gensym "OBJ")))
-    `(let ((,obj (jscl::new)))
-       ,@(loop
-           for (key value) on plist by #'cddr
-           collect `(jscl::oset ,value ,obj ,(transform-case (string key))))
-       ,obj)))
 
 (defun exports-for-js ()
   (#j:console:log "exports-for-js called")
