@@ -62,16 +62,33 @@ class WebsocketConnection
   end
 
   def game_invitation_from?(invitator)
+    message = [:game_invitation_from, invitator]
     wait_until(
       timeout: 1,
       message: "#{user} wants to get an invitation from #{invitator}",
       interval: 0.1,
       debug: true,
-      timeout_expectation:
-        lambda do
-          expect(last_message).to eq([:game_invitation_from, invitator])
-        end,
-    ) { last_message == [:game_invitation_from, invitator] }
+      timeout_expectation: lambda { expect(last_message).to eq(message) },
+    ) { last_message == message }
+
+    self.last_message = nil
+    true
+  end
+
+  def accept_game_invitation(invitator)
+    send_message([:accept_game_invitation, invitator])
+  end
+
+  def game_start_with?(other_user)
+    message = [:game_start_with, other_user]
+    wait_until(
+      timeout: 1,
+      message:
+        "#{user} wants to get a message to start game with #{other_user}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation: lambda { expect(last_message).to eq(message) },
+    ) { last_message == message }
 
     self.last_message = nil
     true
@@ -120,6 +137,8 @@ class WebsocketConnection
         in :users_present, users
           self.other_users = users
         in :game_invitation_from, _invitator
+          nothing_to_do
+        in :game_start_with, _other_user
           nothing_to_do
         end
       end

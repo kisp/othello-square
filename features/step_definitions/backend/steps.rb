@@ -41,8 +41,18 @@ Then(
   "{string} receives a game invitation from {string}",
 ) do |invitee, invitator|
   conn = WebsocketConnection.by_user(invitee)
-  expect(conn).to be_truthy
   expect(conn.game_invitation_from?(invitator)).to be_truthy
+end
+
+When(
+  "{string} accepts the game invitation from {string}",
+) do |invitee, invitator|
+  WebsocketConnection.by_user(invitee).accept_game_invitation(invitator)
+end
+
+Then("{string} gets a game starts with {string} message") do |user, other_user|
+  conn = WebsocketConnection.by_user(user)
+  expect(conn.game_start_with?(other_user)).to be_truthy
 end
 
 Then("sleep for {int} seconds") { |int| mysleep(int) }

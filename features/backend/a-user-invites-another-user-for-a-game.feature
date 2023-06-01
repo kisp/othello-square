@@ -13,3 +13,6 @@ Feature: A user invites another user for a game
   Scenario: jane receives a game invitation from bob
     When "bob" invites "jane" to play a game
     Then "jane" receives a game invitation from "bob"
+    When "jane" accepts the game invitation from "bob"
+    Then "bob" gets a game starts with "jane" message
+    And "jane" gets a game starts with "bob" message
