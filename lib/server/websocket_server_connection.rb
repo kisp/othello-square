@@ -3,6 +3,12 @@ $connections = []
 class WebsocketServerConnection
   attr_accessor :ws, :user, :get_list_of_users_was_handled
 
+  class << self
+    def by_user(user)
+      $connections.find { |c| c.user == user }
+    end
+  end
+
   def initialize(env)
     @ws = Faye::WebSocket.new(env)
     @on_login = []
@@ -37,6 +43,11 @@ class WebsocketServerConnection
       handle_login(user)
     in :get_list_of_users, _
       handle_get_list_of_users
+    in :invite_for_game, invitee
+      self
+        .class
+        .by_user(invitee)
+        .send_message([:game_invitation_from, self.user])
     else
       raise "message not matched: #{message.inspect}"
     end
@@ -50,57 +61,14 @@ class WebsocketServerConnection
   def handle_login(user)
     self.user = user
     send_message([:logged_in, "Welcome, #{self.user}!"])
-
-    # @on_login.each { |proc| proc.call }
-    # tell_this_user_about_existing_users
     tell_other_users_that_we_have_a_new_user
   end
-
-  # def tell_this_user_about_existing_users
-  #   $connections.each do |conn|
-  #     unless conn.user == user
-  #       send_message([:user_entered, conn.user]) if conn.user
-  #     end
-  #   end
-  # end
 
   def on_login(&block)
     @on_login << block
   end
 
   def tell_other_users_that_we_have_a_new_user
-    # dbg [
-    #       "SERVER",
-    #       "doing TELL_OTHER_USERS_THAT_WE_HAVE_A_NEW_USER for",
-    #       user,
-    #       $connections,
-    #     ]
-    # message = [:user_entered, user]
-    # dbg ["SERVER", "$connections is", $connections]
-    # dbg ["SERVER", "DELAYED", "$connections is", $connections]
-    # $connections.each do |conn|
-    #   unless conn.user == user
-    #     if conn.user
-    #       dbg ["SERVER", "CAN SEND DIRECT", "tell #{conn.user} about #{user}"]
-    #       conn.send_message(message)
-    #     else
-    #       dbg [
-    #             "SERVER",
-    #             "WILL SEND MESSAGE LATER",
-    #             "tell #{conn.formatted_user} about #{user}",
-    #           ]
-    #       conn.on_login do
-    #         dbg [
-    #               "SERVER",
-    #               "NOW SENDING DELAYED",
-    #               "tell #{conn.user} about #{user}",
-    #               message,
-    #             ]
-    #         conn.send_message(message)
-    #       end
-    #     end
-    #   end
-    # end
     dbg ["SERVER", "tell_other_users_that_we_have_a_new_user", formatted_user]
     dbg [
           "SERVER",

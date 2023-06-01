@@ -23,8 +23,6 @@ Then("{string} can see that {string} is there") do |user, other_user|
   conn = WebsocketConnection.by_user(user)
   expect(conn).to be_truthy
 
-  # eventually(timeout: 20) { expect(conn.other_users).to include(other_user) }
-
   wait_until(
     timeout: 1,
     message: "#{user} wants to see #{other_user}",
@@ -33,6 +31,18 @@ Then("{string} can see that {string} is there") do |user, other_user|
     timeout_expectation:
       lambda { expect(conn.other_users).to include(other_user) },
   ) { conn.other_users.include?(other_user) }
+end
+
+When("{string} invites {string} to play a game") do |invitator, invitee|
+  WebsocketConnection.by_user(invitator).invite_for_game(invitee)
+end
+
+Then(
+  "{string} receives a game invitation from {string}",
+) do |invitee, invitator|
+  conn = WebsocketConnection.by_user(invitee)
+  expect(conn).to be_truthy
+  expect(conn.game_invitation_from?(invitator)).to be_truthy
 end
 
 Then("sleep for {int} seconds") { |int| mysleep(int) }

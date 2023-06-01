@@ -1,6 +1,10 @@
+require "rspec/expectations"
+
 $connections = {}
 
 class WebsocketConnection
+  include RSpec::Matchers
+
   attr_accessor :open, :logged_in, :last_message, :other_users
   attr_reader :ws, :user
 
@@ -53,6 +57,26 @@ class WebsocketConnection
     self.last_message = nil
   end
 
+  def invite_for_game(invitee)
+    send_message([:invite_for_game, invitee])
+  end
+
+  def game_invitation_from?(invitator)
+    wait_until(
+      timeout: 1,
+      message: "#{user} wants to get an invitation from #{invitator}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation:
+        lambda do
+          expect(last_message).to eq([:game_invitation_from, invitator])
+        end,
+    ) { last_message == [:game_invitation_from, invitator] }
+
+    self.last_message = nil
+    true
+  end
+
   def inspect
     "#<connection user=#{user}>"
   end
@@ -95,6 +119,8 @@ class WebsocketConnection
           self.logged_in = true
         in :users_present, users
           self.other_users = users
+        in :game_invitation_from, _invitator
+          nothing_to_do
         end
       end
     end
