@@ -4,7 +4,14 @@ import m from "mithril";
 
 import myapp from "./public/myapp";
 const { exports_for_js } = myapp;
-const { myinit, fact, getBoolFromJs, maxViaJsInline } = exports_for_js();
+const { myinit, fact, getBoolFromJs, maxViaJsInline, runAllTestsJest } =
+  exports_for_js();
+
+test("run all mini-fiveam tests", () => {
+  const [result, report] = runAllTestsJest();
+  console.log(report);
+  expect(result).toBe(true);
+});
 
 test("uses jest-dom", async () => {
   const user = userEvent.setup();

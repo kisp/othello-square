@@ -19,9 +19,10 @@
     <script type="module">
       import myapp from "./myapp.js";
       const { exports_for_js } = myapp;
-      const { myinit } = exports_for_js();
+      const { myinit, runAllTestsJest } = exports_for_js();
 
       myinit();
+      window.runAllTestsJest = runAllTestsJest;
     </script>
     <!-- <script type="module">
          import jscl from "./jscl.js";

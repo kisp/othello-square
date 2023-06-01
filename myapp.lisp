@@ -1,5 +1,5 @@
 (defpackage :myapp
-  (:use :cl :m-macro))
+  (:use :cl :m-macro :utils))
 
 (in-package :myapp)
 
@@ -9,17 +9,8 @@
 (defvar *welcome-message* nil)
 (defvar *other-users* nil)
 
-(defun clog (&rest args)
-  (apply #j:console:log args))
-
-(defun clog-lisp (&rest args)
-  (apply #'clog (mapcar #'prin1-to-string args)))
-
 (defun add-event-listener (obj event fn)
   ((jscl::oget obj "addEventListener") event fn))
-
-(defun remove-last-char (string)
-  (subseq string 0 (1- (length string))))
 
 (defun ws-url ()
   (format nil
@@ -233,6 +224,7 @@
 (defun exports-for-js ()
   (#j:console:log "exports-for-js called")
   (obj-literal
+   :|runAllTestsJest| #'mini-fiveam:run-all-tests-jest
    :myinit #'myinit
    :fact #'fact
    :|getBoolFromJs| #'get-bool-from-js
