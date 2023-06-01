@@ -37,4 +37,24 @@ module KnowsFrontend
     expect(page).to have_css("h2", text: "Online users")
     expect(page).to have_css("#user_#{other_user}")
   end
+
+  def invite_for_game(invitee)
+    within("#user_#{invitee}") do
+      click_button("Invite for game")
+    end
+  end
+
+  def game_invitation_from!(invitator)
+    expect(page).to have_css("h2", text: "#{invitator} invites you for a game!")
+  end
+
+  def accept_game_invitation(invitator)
+    within("#game_invitation") do
+      click_button("Accept")
+    end
+  end
+
+  def game_start_received!(other_user)
+    expect(page).to have_css("#board")
+  end
 end

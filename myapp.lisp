@@ -8,6 +8,8 @@
 (defvar *nickname* nil)
 (defvar *welcome-message* nil)
 (defvar *other-users* nil)
+(defvar *pending-invite* nil)
+(defvar *game* nil)
 
 (defun send! (message)
   (websocket-send
@@ -27,6 +29,11 @@
            (map 'list #'jscl::js-to-lisp (second message))))
     (:user-entered
      (push (second message) *other-users*))
+    (:game-invitation-from
+     (setq *pending-invite* (second message)))
+    (:game-start-with
+     ;; TODO: (second message) is the other user
+     (setq *game* t))
     (t
      (error "Don't know how to handle-message: ~S"
             message)))
@@ -53,6 +60,15 @@
                 (every (lambda (char) (char= char #\space)) nickname))
       (setq *nickname* nickname)
       (setq *ws* (open-websocket-with-handlers)))))
+
+(defun invite-for-game-handler (invitee)
+  (lambda (event)
+    ((jscl::oget event "preventDefault"))
+    (send! `(:invite-for-game ,invitee))))
+
+(defun handle-game-invitation-accept (event)
+  ((jscl::oget event "preventDefault"))
+  (send! `(:accept-game-invitation ,*pending-invite*)))
 
 (defun app-aux (&rest args)
   (plist2object
@@ -81,8 +97,21 @@
                      (mapcar (lambda (user)
                                (m "li"
                                   (list :id (format nil "user_~A" user))
-                                  user))
-                             *other-users*)))))))))
+                                  user
+                                  (m "button"
+                                     (list :onclick (invite-for-game-handler user))
+                                     "Invite for game")))
+                             *other-users*))))
+         (when *pending-invite*
+           (m "div#game_invitation"
+              (m "h2"
+                 (format nil "~A invites you for a game!" *pending-invite*)
+                 (m "button"
+                    (list :onclick #'handle-game-invitation-accept)
+                    "Accept"))))
+         (when *game*
+           (m "div#board"
+              "Game board")))))))
 
 (defun app ()
   (plist2object
