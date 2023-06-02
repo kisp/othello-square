@@ -92,7 +92,7 @@
 . . . . . . . .
 ")
 
-(defconstant +after-one-move-from-black-string+
+(defconstant +after-34-move-from-black-string+
   ". . . . . . . .
 . . . . . . . .
 . . . @ . . . .
@@ -134,7 +134,7 @@
     (is (eql 0 (count-difference +white+ board)))))
 
 (deftest count-difference.2
-  (let ((board (parse-board +after-one-move-from-black-string+)))
+  (let ((board (parse-board +after-34-move-from-black-string+)))
     (is (eql 3 (count-difference +black+ board)))
     (is (eql -3 (count-difference +white+ board)))))
 
@@ -196,7 +196,7 @@ one opponent piece."
   (let ((board (initial-board)))
     (setq board
           (make-move 34 +black+ board))
-    (is (equal +after-one-move-from-black-string+
+    (is (equal +after-34-move-from-black-string+
                (print-board-to-string board)))))
 
 (defun make-flips (move player board dir)
