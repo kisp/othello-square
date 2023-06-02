@@ -9,6 +9,7 @@
       (message "==> %s" (car (read-from-string (cdr (assoc 'value result))))))))
 
 (global-set-key (kbd "H-q") 'paul/slime-eval-in-browser)
+(global-set-key (kbd "M-S-<return>") 'paul/slime-eval-in-browser)
 
 (defun paul/slime-eval-in-browser-and-redraw ()
   (interactive)
