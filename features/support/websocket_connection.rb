@@ -1,6 +1,10 @@
+require "rspec/expectations"
+
 $connections = {}
 
 class WebsocketConnection
+  include RSpec::Matchers
+
   attr_accessor :open, :logged_in, :last_message, :other_users
   attr_reader :ws, :user
 
@@ -22,7 +26,7 @@ class WebsocketConnection
 
     connect
 
-    login if do_login
+    login_as(user) if do_login
   end
 
   def send_message(message)
@@ -30,7 +34,9 @@ class WebsocketConnection
     ws.send(message.to_json)
   end
 
-  def login
+  def login_as(nickname)
+    raise "oops! expected nickname == user" unless nickname == user
+
     send_message([:login, user])
 
     # self.logged_in = true
@@ -50,6 +56,52 @@ class WebsocketConnection
       message: "Waiting for other_users to be not nil",
       debug: true,
     ) { other_users }
+    self.last_message = nil
+  end
+
+  def can_see_that_other_user_is_there!(other_user)
+    wait_until(
+      timeout: 1,
+      message: "#{user} wants to see #{other_user}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation:
+        lambda { expect(other_users).to include(other_user) },
+    ) { other_users.include?(other_user) }
+  end
+
+  def invite_for_game(invitee)
+    send_message([:invite_for_game, invitee])
+  end
+
+  def game_invitation_from!(invitator)
+    message = [:game_invitation_from, invitator]
+    wait_until(
+      timeout: 1,
+      message: "#{user} wants to get an invitation from #{invitator}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation: lambda { expect(last_message).to eq(message) },
+    ) { last_message == message }
+
+    self.last_message = nil
+  end
+
+  def accept_game_invitation(invitator)
+    send_message([:accept_game_invitation, invitator])
+  end
+
+  def game_start_received!(other_user)
+    message = [:game_start_with, other_user]
+    wait_until(
+      timeout: 1,
+      message:
+        "#{user} wants to get a message to start game with #{other_user}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation: lambda { expect(last_message).to eq(message) },
+    ) { last_message == message }
+
     self.last_message = nil
   end
 
@@ -95,6 +147,10 @@ class WebsocketConnection
           self.logged_in = true
         in :users_present, users
           self.other_users = users
+        in :game_invitation_from, _invitator
+          nothing_to_do
+        in :game_start_with, _other_user
+          nothing_to_do
         end
       end
     end

@@ -1,4 +1,4 @@
-@javascript
+@frontend @javascript
 Feature: A user visits the site and is prompted for her name
   As an othello player
   I want to login to the site with my nickname
