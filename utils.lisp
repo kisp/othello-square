@@ -18,7 +18,8 @@
            #:m-mount
            #:m-redraw
            #:js-array
-           #:js-array*))
+           #:js-array*
+           #:range))
 
 (in-package :utils)
 
@@ -212,6 +213,17 @@
 
 (defun m-redraw ()
   (funcall (jscl::js-inline "m.redraw")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                             range                              ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun range (from to)
+  (loop for i from from to to collect i))
+
+(deftest range.1
+  (is (equal '(1 2 3) (range 1 3)))
+  (is (equal '() (range 10 1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                             other                              ;;;
