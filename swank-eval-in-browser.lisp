@@ -31,7 +31,7 @@
              (let ((code
                      (with-output-to-string (out)
                        (emit-code out))))
-               (print code)
+               ;; (print code)
                (SWANK:EVAL-IN-EMACS
                 `(skewer-eval-synchronously ,code)))))
     (eval-in-browser)))
