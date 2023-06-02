@@ -7,7 +7,7 @@ test-cucumber-all:
 	bundle exec cucumber --order random
 
 dev:
-	bundle exec rackup -Ilib -p 3030
+	bundle exec foreman start
 
 PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile\|fly.toml\|Dockerfile\|\.sh\|\.rspec\|\.gitignore\|jscl/\|\.el'
 
