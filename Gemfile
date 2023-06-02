@@ -17,4 +17,5 @@ group :development do
   gem "service_manager", "~> 0.6.4"
   gem "pry", "~> 0.14.2"
   gem "pry-remote", "~> 0.1.8"
+  gem "foreman", "~> 0.87.2"
 end

@@ -7,7 +7,7 @@ test-cucumber-all:
 	bundle exec cucumber --order random
 
 dev:
-	bundle exec rackup -Ilib -p 3030
+	bundle exec foreman start
 
 PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile\|fly.toml\|Dockerfile\|\.sh\|\.rspec\|\.gitignore\|jscl/\|\.el'
 
@@ -44,8 +44,21 @@ jscl-build-app:
 	  --end-toplevel-options
 
 ######################################################################
+###                          tailwindcss                           ###
+######################################################################
+
+css-watch:
+	npx tailwindcss -i ./base.css -o ./public/app.css --watch
+
+css-build:
+	npx tailwindcss -i ./base.css -o ./public/app.css
+
+css-build-prod:
+	npx tailwindcss -i ./base.css -o ./public/app.css -m
+
+######################################################################
 ###                            deploy                              ###
 ######################################################################
 
-deploy: jscl-build-app
+deploy: jscl-build-app css-build-prod
 	flyctl deploy

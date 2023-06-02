@@ -1,10 +1,6 @@
 module KnowsFrontend
   def as_user(user, &block)
-    if user == "I"
-      block.call
-    else
-      Capybara.using_session(user, &block)
-    end
+    user == "I" ? block.call : Capybara.using_session(user, &block)
   end
 
   def visit_the_homepage
@@ -39,9 +35,7 @@ module KnowsFrontend
   end
 
   def invite_for_game(invitee)
-    within("#user_#{invitee}") do
-      click_button("Invite for game")
-    end
+    within("#user_#{invitee}") { click_button("Invite for game") }
   end
 
   def game_invitation_from!(invitator)
@@ -49,9 +43,7 @@ module KnowsFrontend
   end
 
   def accept_game_invitation(invitator)
-    within("#game_invitation") do
-      click_button("Accept")
-    end
+    within("#game_invitation") { click_button("Accept") }
   end
 
   def game_start_received!(other_user)
