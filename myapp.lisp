@@ -76,7 +76,8 @@
     :view
     (lambda (&rest args)
       (m "div"
-         (m "h1" (m "a" (list :href "/") "Othello Square"))
+         (m "h1" (list :class "text-2xl text-pink-500")
+            (m "a" (list :href "/") "Othello Square"))
          (unless *welcome-message*
            (js-array*
             (m "h2" "Please login with your nickname")
