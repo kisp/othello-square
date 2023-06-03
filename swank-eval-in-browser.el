@@ -18,7 +18,7 @@
       `(cl-user::eval-in-browser ,(slime-defun-at-point) t)
     (lambda (result)
       (message "==> %s" (car (read-from-string (cdr (assoc 'value result)))))))
-  (run-with-timer 0.5 nil 'my/update-css))
+  (run-with-timer 3 nil 'my/update-css))
 
 (global-set-key (kbd "H-p") 'my/slime-eval-in-browser-and-redraw)
 (global-set-key (kbd "M-<return>") 'my/slime-eval-in-browser-and-redraw)
@@ -33,6 +33,7 @@
   (save-some-buffers t)
   (with-current-buffer (slime-output-buffer)
     (insert "cc")
-    (slime-repl-return)))
+    (slime-repl-return))
+  (message "my/compile-application...DONE"))
 
 (global-set-key (kbd "M-<f16>") 'my/compile-application)
