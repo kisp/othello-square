@@ -27,3 +27,12 @@
   (with-current-buffer (find-file-noselect (format "%spublic/app.css" (projectile-acquire-root)))
     (skewer-css-eval-buffer)
     (kill-buffer)))
+
+(defun my/compile-application ()
+  (interactive)
+  (save-some-buffers t)
+  (with-current-buffer (slime-output-buffer)
+    (insert "cc")
+    (slime-repl-return)))
+
+(global-set-key (kbd "M-<f16>") 'my/compile-application)
