@@ -239,11 +239,19 @@ internals.lisp_to_js = function (x) {
     if ("jscl_original" in x) {
       return x.jscl_original;
     } else {
-      return function () {
-        var args = Array.prototype.slice.call(arguments);
-        for (var i in args) args[i] = internals.js_to_lisp(args[i]);
-        return internals.lisp_to_js(x.apply(this, [internals.pv].concat(args)));
-      };
+      if (x.lisp_to_js_wrapper) {
+        return x.lisp_to_js_wrapper;
+      } else {
+        var lisp_to_js_wrapper = function () {
+          var args = Array.prototype.slice.call(arguments);
+          for (var i in args) args[i] = internals.js_to_lisp(args[i]);
+          return internals.lisp_to_js(
+            x.apply(this, [internals.pv].concat(args))
+          );
+        };
+        x.lisp_to_js_wrapper = lisp_to_js_wrapper;
+        return lisp_to_js_wrapper;
+      }
     }
   } else return x;
 };
