@@ -70,6 +70,25 @@
   ((jscl::oget event "preventDefault"))
   (send! `(:accept-game-invitation ,*pending-invite*)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                            counter                             ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun counter (initial-vnode)
+  (let ((count 0))
+    (plist2object
+     (list
+      :view
+      (lambda (vnode)
+        (m "div.text-4xl"
+           (m "div" count)
+           (m "button" (list :onclick (lambda (event) (incf count)))
+              "Click me")))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                              app                               ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun app-aux (initial-vnode)
   (plist2object
    (list
