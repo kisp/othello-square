@@ -12,6 +12,8 @@
          "../myapp.lisp")
    "../public/myapp.js"))
 
+(define-symbol-macro cc (compile-application))
+
 (defun bootstrap-and-compile-application ()
   (jscl:bootstrap)
   (compile-application))
