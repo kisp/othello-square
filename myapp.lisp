@@ -121,15 +121,28 @@
     (lambda (&rest args)
       (m (symbol-function 'app-aux))))))
 
+(defvar *app-mounted* nil)
+
 (defun mount-app ()
+  ;; you can run this from the browser console:
+  ;; import("./myapp.js").then(x => x.default.exports_for_js().mountApp())
+  (when *app-mounted*
+    (unmount-app))
   (let ((elt (jscl::js-inline "document.getElementById('app')")))
-    (m-mount elt (app))))
+    (m-mount elt #'app)
+    (setq *app-mounted* t)))
+
+(defun unmount-app ()
+  (let ((elt (jscl::js-inline "document.getElementById('app')")))
+    (m-mount elt (jscl::js-inline "null"))
+    (jscl::oset "" elt "innerHTML")))
 
 (defun exports-for-js ()
   (#j:console:log "exports-for-js called")
   (obj-literal
    :|runAllTestsJest| #'mini-fiveam:run-all-tests-jest
    :|mountApp| #'mount-app
+   :|unmountApp| #'unmount-app
    :fact #'fact
    :|getBoolFromJs| #'get-bool-from-js
    :|maxViaJsInline| #'max-via-js-inline))
