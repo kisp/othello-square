@@ -23,3 +23,9 @@
 
 #+swank
 (swank:eval-in-emacs '(load (format "%sswank-eval-in-browser.el" (projectile-acquire-root))))
+
+#+swank
+(swank:eval-in-emacs '(find-file-noselect (format "%spublic/app.js" (projectile-acquire-root))))
+
+#+swank
+(swank:eval-in-emacs '(httpd-start))
