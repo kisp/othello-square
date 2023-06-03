@@ -28,4 +28,4 @@
 (swank:eval-in-emacs '(find-file-noselect (format "%spublic/app.js" (projectile-acquire-root))))
 
 #+swank
-(swank:eval-in-emacs '(httpd-start))
+(swank:eval-in-emacs '(let ((httpd-host "0.0.0.0")) (httpd-start)))
