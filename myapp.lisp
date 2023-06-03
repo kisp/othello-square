@@ -70,11 +70,11 @@
   ((jscl::oget event "preventDefault"))
   (send! `(:accept-game-invitation ,*pending-invite*)))
 
-(defun app-aux (&rest args)
+(defun app-aux (initial-vnode)
   (plist2object
    (list
     :view
-    (lambda (&rest args)
+    (lambda (vnode)
       (m "div"
          (m "h1" (list :class "text-2xl text-pink-500")
             (m "a" (list :href "/") "Othello Square"))
@@ -114,12 +114,12 @@
            (m "div#board"
               "Game board")))))))
 
-(defun app ()
+(defun app (initial-vnode)
   (plist2object
    (list
     :view
-    (lambda (&rest args)
-      (m (symbol-function 'app-aux))))))
+    (lambda (vnode)
+      (m #'app-aux)))))
 
 (defvar *app-mounted* nil)
 
