@@ -17,3 +17,9 @@
 (defun bootstrap-and-compile-application ()
   (jscl:bootstrap)
   (compile-application))
+
+#+swank
+(load "../swank-eval-in-browser.lisp")
+
+#+swank
+(swank:eval-in-emacs '(load (format "%sswank-eval-in-browser.el" (projectile-acquire-root))))
