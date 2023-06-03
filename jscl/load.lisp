@@ -19,6 +19,9 @@
   (compile-application))
 
 #+swank
+(bootstrap-and-compile-application)
+
+#+swank
 (load "../swank-eval-in-browser.lisp")
 
 #+swank
