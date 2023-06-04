@@ -123,7 +123,7 @@ class WebsocketConnection
     send_message([:move_to, square])
   end
 
-  def receive_move_to(square)
+  def receive_move_to(square, _color)
     message = [:move_to, square]
     wait_until(
       timeout: 1,

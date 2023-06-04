@@ -21,4 +21,4 @@ Feature: A user makes a move and the other user sees it
 
   Scenario: Bob makes a first move
     When "Bob" makes a move to "3,4"
-    Then "Jane" sees a move to "3,4" from her opponent
+    Then "Jane" sees a "black" move to "3,4" from her opponent
