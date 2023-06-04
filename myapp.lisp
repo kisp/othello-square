@@ -172,7 +172,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-component main-container ()
-  (ms (:main :class "container mx-auto px-4 pb-8")
+  (ms (:main :class "container mx-auto px-4 pt-14")
       children))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -180,7 +180,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-component navbar ()
-  (ms (:header :class "text-white text-xl md:text-2xl bg-pink-700 p-2 shadow-lg flex items-center")
+  (ms (:header :class "fixed w-full text-white text-xl md:text-2xl bg-pink-700 p-2 shadow-lg flex items-center")
       (ms :h1 (ms (:a :href "/") "Othello Square"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -215,12 +215,44 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-component login-form ()
-  (ms :div
-      (ms :h2 "Please login with your nickname")
-      (ms (:form :onsubmit #'handle-login-submit)
-          (ms (:label :for "nickname") "Nickname")
-          (ms (:input :id "nickname"))
-          (ms :button "Login"))))
+  ;; (ms (:div :class "flex justify-center mt-[23vh]")
+  ;;     (ms (:div
+  ;;          :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
+  ;;         (ms :h2 "Please login")
+  ;;         (ms (:form :onsubmit #'handle-login-submit)
+  ;;             (ms (:label :for "nickname") "Nickname")
+  ;;             (ms (:input :id "nickname"))
+  ;;             (ms :button "Login"))))
+  ;; (ms (:div :class "bg-white p-12")
+  ;;     (ms (:h2 :class "text-base font-semibold leading-7 text-gray-900")
+  ;;         "Please login")
+  ;;     (ms (:div :class "mt-6 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6")
+  ;;         (ms (:div :class "col-span-full")
+  ;;             (ms (:label :class "block text-sm font-medium leading-6 text-gray-900")
+  ;;                 "Nickname")
+  ;;             (ms (:div :class "mt-2")
+  ;;                 (ms (:input :class "block outline-none w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"))))
+  ;;         (ms (:div :class "mt-6 flex items-center justify-end gap-x-6")
+  ;;             (ms (:button :class "cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600")
+  ;;                 "Login"))))
+  (ms (:div :class "flex justify-center mt-[20vh]")
+      (ms (:div :class "border-2 border-black rounded bg-gray-100 p-4 my-4 md:text-xl")
+          (ms (:h2 :class "text-base font-semibold leading-7 text-gray-900 text-center")
+              "Please login")
+          (ms (:form :onsubmit #'handle-login-submit)
+              (ms (:div :class "mt-6 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6")
+                  (ms (:div :class "col-span-full")
+                      (ms (:label
+                           :for "nickname"
+                           :class "block text-sm font-medium leading-6 text-gray-900 text-center")
+                          "Nickname")
+                      (ms (:div :class "mt-2")
+                          (ms (:input
+                               :id "nickname"
+                               :class "block outline-none w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"))))
+                  (ms (:div :class "mt-2 flex items-center justify-center gap-x-6")
+                      (ms (:button :class "cursor-pointer rounded-md bg-pink-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600")
+                          "Login")))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                          login-page                            ;;;

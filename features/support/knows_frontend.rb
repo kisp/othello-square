@@ -9,7 +9,7 @@ module KnowsFrontend
   end
 
   def asked_to_login_with_nickname
-    expect(page).to have_css("h2", text: "Please login with your nickname")
+    expect(page).to have_css("h2", text: "Please login")
     expect(page).not_to have_css("#message")
   end
 
@@ -25,7 +25,7 @@ module KnowsFrontend
 
   def sees_the_welcome_message(message)
     expect(page).to have_css("#message", text: message)
-    expect(page).not_to have_css("h2", text: "Please login with your nickname")
+    expect(page).not_to have_css("h2", text: "Please login")
     expect(page).not_to have_css("input#nickname")
   end
 
