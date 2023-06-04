@@ -254,7 +254,7 @@
 (define-component game-message ()
   (ms (:div :id "game_message"
             :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
-      (if (equal *nickname* *game-first-player-nickname*)
+      (if (eql *game-current-player* *game-my-color*)
           "It's your turn"
           (format nil "Waiting for ~a's turn" *game-opponent-nickname*))))
 
