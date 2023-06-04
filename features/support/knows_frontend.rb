@@ -77,4 +77,18 @@ module KnowsFrontend
   def show_page_html
     puts page.html
   end
+
+  def sees_square_content(square, content)
+    case content
+    in "@"
+      content_class = "bp"
+    in "O"
+      content_class = "wp"
+    in ""
+      content_class = "ee"
+    in "+"
+      content_class = "lm"
+    end
+    expect(page).to have_css("#square_#{square.join("")} .#{content_class}")
+  end
 end

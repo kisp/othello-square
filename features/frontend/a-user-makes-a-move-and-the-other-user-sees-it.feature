@@ -1,5 +1,5 @@
 @frontend @javascript
-Feature: A user invites another user for a game
+Feature: A user makes a move and the other user sees it
 
   Background:
     Given no users are connected to the game server
