@@ -33,10 +33,10 @@ Feature: A user invites another user for a game
 
   Scenario: Bob makes a first move and Alice replies
     When "Bob" makes a move to "3,4"
-    Then "Alice" sees a "black" move to "3,4" from her opponent
+    Then "Alice" sees a pieces balance of "4/1"
+    And "Alice" sees a "black" move to "3,4" from her opponent
 
     And "Bob" sees a pieces balance of "4/1"
-    And "Alice" sees a pieces balance of "4/1"
 
     When "Alice" makes a move to "5,3"
     Then "Bob" sees a "white" move to "5,3" from his opponent
