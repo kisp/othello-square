@@ -223,12 +223,58 @@
                     *other-users*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                         game-message                           ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component game-message ()
+  (ms (:div :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
+      "It's your turn"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                             square                             ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component empty-square (legal-move-indicator)
+  (ms (:div :class "border border-black flex items-center justify-center")
+      (when legal-move-indicator
+        (ms (:div :class "border border-black rounded-full w-5/6 h-5/6")))))
+
+(define-component black-square ()
+  (ms (:div :class "border border-black flex items-center justify-center")
+      (ms (:div :class "bp w-5/6 h-5/6"))))
+
+(define-component white-square ()
+  (ms (:div :class "border border-black flex items-center justify-center")
+      (ms (:div :class "wp w-5/6 h-5/6"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                             board                              ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component board ()
+  (let* ((player othello::+black+)
+         (board (othello::initial-board))
+         (legal-moves (othello::legal-moves player board)))
+    (ms (:div :class "border border-black bg-green-600 aspect-square grid grid-cols-8 max-h-screen")
+        (apply #'js-array
+               (othello::map-board-squares
+                (lambda (row col square)
+                  (case (othello::bref board square)
+                    ;; othello::+empty+
+                    (0 (mc (empty-square :legal-move-indicator (member square legal-moves))))
+                    ;; othello::+black+
+                    (1 (mc black-square))
+                    ;; othello::+white+
+                    (2 (mc white-square)))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           game-page                            ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-page game-page ()
   (m "div#board"
-     "Game board"))
+     (mc game-message)
+     (mc board)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                         page-switcher                          ;;;
