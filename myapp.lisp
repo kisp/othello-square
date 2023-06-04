@@ -116,16 +116,14 @@
 ;;;                            counter                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun counter (initial-vnode)
-  (let ((count 0))
-    (plist2object
-     (list
-      :view
-      (lambda (vnode)
-        (m "div.text-4xl"
-           (m "div" count)
-           (m "button" (list :onclick (lambda (event) (incf count)))
-              "Click me")))))))
+(define-component counter ((button-text "Click me") children-fn) ((count 0))
+  (m "div.text-4xl"
+     (if children-fn
+         (funcall children-fn count)
+         (or children
+             (m "div" count)))
+     (m "button" (list :onclick (lambda (event) (incf count)))
+        button-text)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                              app                               ;;;
