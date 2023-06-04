@@ -60,4 +60,17 @@ module KnowsFrontend
       text: "Waiting for #{other_user}'s turn",
     )
   end
+
+  def move_to(square)
+    page.find_by_id("square_#{square.join("")}").click
+  end
+
+  def receive_move_to(square, color)
+    piece_class = color == "black" ? "bp" : "wp"
+    expect(page).to have_css("#square_#{square.join("")} .#{piece_class}")
+  end
+
+  def sees_pieces_balance(balance)
+    expect(page).to have_css("#board[data-pieces-balance=\"#{balance}\"]")
+  end
 end
