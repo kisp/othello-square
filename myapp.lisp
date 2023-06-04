@@ -305,7 +305,7 @@
   (mc (square-container :square square)
     (if legal-move-indicator
         (ms (:div :class "lm border border-black rounded-full w-5/6 h-5/6"))
-        (ms (:div :class "ee border border-black rounded-full w-5/6 h-5/6")))))
+        (ms (:div :class "ee")))))
 
 (define-component black-square (square)
   (mc (square-container :square square)
