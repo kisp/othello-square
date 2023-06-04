@@ -11,9 +11,10 @@
 (defvar *other-users* nil)
 (defvar *pending-invite* nil)
 (defvar *game-board* nil)
-(defvar *game-opponent* nil)
-(defvar *game-first-player* nil)
+(defvar *game-first-player-nickname* nil)
+(defvar *game-opponent-nickname* nil)
 (defvar *game-current-player* nil)
+(defvar *game-my-color* nil)
 
 (defun send! (message)
   (websocket-send
@@ -37,9 +38,12 @@
      (setq *pending-invite* (second message)))
     (:game-start-with
      (setq *game-board* (othello::initial-board)
-           *game-opponent* (second message)
-           *game-first-player* (third message)
-           *game-current-player* othello::+black+))
+           *game-opponent-nickname* (second message)
+           *game-first-player-nickname* (third message)
+           *game-current-player* othello::+black+
+           *game-my-color* (if (equal *game-first-player-nickname* *nickname*)
+                               othello::+black+
+                               othello::+white+)))
     (:move-to
      (destructuring-bind (square) (cdr message)
        (handle-opponent-move square)))
@@ -250,9 +254,9 @@
 (define-component game-message ()
   (ms (:div :id "game_message"
             :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
-      (if (equal *nickname* *game-first-player*)
+      (if (equal *nickname* *game-first-player-nickname*)
           "It's your turn"
-          (format nil "Waiting for ~a's turn" *game-opponent*))))
+          (format nil "Waiting for ~a's turn" *game-opponent-nickname*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                             square                             ;;;
@@ -267,8 +271,9 @@
 
 (define-component empty-square (square legal-move-indicator)
   (mc (square-container :square square)
-    (when legal-move-indicator
-      (ms (:div :class "border border-black rounded-full w-5/6 h-5/6")))))
+    (if legal-move-indicator
+        (ms (:div :class "lm border border-black rounded-full w-5/6 h-5/6"))
+        (ms (:div :class "ee border border-black rounded-full w-5/6 h-5/6")))))
 
 (define-component black-square (square)
   (mc (square-container :square square)
@@ -283,8 +288,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-component board ()
-  (let* ((player othello::+black+)
-         (legal-moves (othello::legal-moves player *game-board*)))
+  (let ((legal-moves (othello::legal-moves *game-current-player* *game-board*)))
     (ms (:div :class "border border-black bg-green-600 aspect-square grid grid-cols-8 max-h-screen")
         (apply #'js-array
                (othello::map-board-squares
@@ -293,7 +297,10 @@
                     ;; othello::+empty+
                     (0 (mc (empty-square
                             :square square
-                            :legal-move-indicator (member square legal-moves))))
+                            :legal-move-indicator
+                            (and (eql *game-current-player*
+                                      *game-my-color*)
+                                 (member square legal-moves)))))
                     ;; othello::+black+
                     (1 (mc (black-square :square square)))
                     ;; othello::+white+
