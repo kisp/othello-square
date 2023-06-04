@@ -34,6 +34,7 @@ Feature: A user invites another user for a game
   Scenario: Bob makes a first move and Alice replies
     When "Bob" makes a move to "3,4"
     Then "Alice" sees a pieces balance of "4/1"
+    And "Alice" show page html
     And "Alice" sees a "black" move to "3,4" from her opponent
 
     And "Bob" sees a pieces balance of "4/1"

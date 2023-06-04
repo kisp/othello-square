@@ -21,3 +21,7 @@ end
 Then("{string} is waiting for {string} 's turn") do |user, other_user|
   as_user(user) { sees_the_waiting_for_turn_message(other_user) }
 end
+
+Then('{string} show page html') do |user|
+  as_user(user) { show_page_html }
+end

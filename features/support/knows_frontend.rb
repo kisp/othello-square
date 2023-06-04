@@ -73,4 +73,8 @@ module KnowsFrontend
   def sees_pieces_balance(balance)
     expect(page).to have_css("#board[data-pieces-balance=\"#{balance}\"]")
   end
+
+  def show_page_html
+    puts page.html
+  end
 end
