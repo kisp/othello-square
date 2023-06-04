@@ -49,8 +49,8 @@ class WebsocketServerConnection
         .by_user(invitee)
         .send_message([:game_invitation_from, self.user])
     in :accept_game_invitation, invitator
-      send_message([:game_start_with, invitator])
-      self.class.by_user(invitator).send_message([:game_start_with, self.user])
+      send_message([:game_start_with, invitator, invitator])
+      self.class.by_user(invitator).send_message([:game_start_with, self.user, invitator])
     else
       raise "message not matched: #{message.inspect}"
     end

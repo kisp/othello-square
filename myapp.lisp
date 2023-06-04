@@ -11,6 +11,8 @@
 (defvar *other-users* nil)
 (defvar *pending-invite* nil)
 (defvar *game* nil)
+(defvar *game-opponent* nil)
+(defvar *game-first-player* nil)
 
 (defun send! (message)
   (websocket-send
@@ -33,8 +35,9 @@
     (:game-invitation-from
      (setq *pending-invite* (second message)))
     (:game-start-with
-     ;; TODO: (second message) is the other user
-     (setq *game* t))
+     (setq *game* t
+           *game-opponent* (second message)
+           *game-first-player* (third message)))
     (t
      (error "Don't know how to handle-message: ~S"
             message)))
@@ -227,8 +230,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-component game-message ()
-  (ms (:div :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
-      "It's your turn"))
+  (ms (:div :id "game_message"
+            :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
+      (if (equal *nickname* *game-first-player*)
+          "It's your turn"
+          (format nil "Waiting for ~a's turn" *game-opponent*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                             square                             ;;;

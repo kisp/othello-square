@@ -21,6 +21,10 @@ Feature: A user invites another user for a game
   Scenario: Alice receives a game invitation from Bob
     When "Bob" invites "Alice" to play a game
     Then "Alice" receives a game invitation from "Bob"
+
     When "Alice" accepts the game invitation from "Bob"
     Then "Bob" gets a game starts with "Alice" message
     And "Alice" gets a game starts with "Bob" message
+
+    Then it is "Bob" 's turn
+    And "Alice" is waiting for "Bob" 's turn
