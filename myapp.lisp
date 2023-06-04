@@ -6,6 +6,7 @@
 (defvar *ws* nil)
 
 (defvar *nickname* nil)
+(defvar *login-success* nil)
 (defvar *welcome-message* nil)
 (defvar *other-users* nil)
 (defvar *pending-invite* nil)
@@ -21,7 +22,7 @@
     (:please-tell-me-who-you-are
      (send! `(:login ,*nickname*)))
     (:logged-in
-     (setq *nickname* (get-nickname-from-input-field)
+     (setq *login-success* t
            *welcome-message* (second message))
      (send! `(:get-list-of-users)))
     (:users-present
@@ -82,17 +83,21 @@
 ;;;                              mc                                ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro mc ((name &rest args) &body body)
-  `(m (function ,name) (list ,@args) ,@body))
+(defmacro mc (name-and-args &body body)
+  (destructuring-bind (name &rest args)
+      (if (consp name-and-args) name-and-args (list name-and-args))
+    `(m (function ,name) (list ,@args) ,@body)))
 
-(defmacro ms ((name &rest args) &body body)
-  `(m ,(string-downcase name) (list ,@args) ,@body))
+(defmacro ms (name-and-args &body body)
+  (destructuring-bind (name &rest args)
+      (if (consp name-and-args) name-and-args (list name-and-args))
+    `(m ,(string-downcase name) (list ,@args) ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                       define-component                         ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro define-component (name args state &body body)
+(defmacro define-component* (name args state &body body)
   `(defun ,name (initial-vnode)
      (let ,state
        (plist2object
@@ -112,11 +117,15 @@
                (setq children nil))
              ,@body)))))))
 
+(defmacro define-component (name args &body body)
+  `(define-component* ,name ,args ()
+     ,@body))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                            counter                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-component counter ((button-text "Click me") children-fn) ((count 0))
+(define-component* counter ((button-text "Click me") children-fn) ((count 0))
   (m "div.text-4xl"
      (if children-fn
          (funcall children-fn count)
@@ -126,58 +135,124 @@
         button-text)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                        initial-wrapper                         ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component initial-wrapper ()
+  (ms (:div :class "bg-gray-400 min-h-screen")
+      children))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                        main-container                          ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component main-container ()
+  (ms (:main :class "container mx-auto px-4 pb-8")
+      children))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                            navbar                              ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component navbar ()
+  (ms (:header :class "text-white text-xl md:text-2xl bg-pink-700 p-2 shadow-lg flex items-center")
+      (ms :h1 (ms (:a :href "/") "Othello Square"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                        default-layout                          ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component default-layout ()
+  (mc initial-wrapper
+    (mc navbar)
+    (mc main-container
+      (ms :div
+          (when *welcome-message*
+            (m "div#message"
+               (list :data-testid "message")
+               *welcome-message*))
+          (when *pending-invite*
+            (m "div#game_invitation"
+               (m "h2"
+                  (format nil "~A invites you for a game!" *pending-invite*)
+                  (m "button"
+                     (list :onclick #'handle-game-invitation-accept)
+                     "Accept"))))
+          children))))
+
+(defmacro define-page (name args &body body)
+  `(define-component ,name ,args
+     (mc default-layout
+       ,@body)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                          login-form                            ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component login-form ()
+  (ms :div
+      (ms :h2 "Please login with your nickname")
+      (ms (:form :onsubmit #'handle-login-submit)
+          (ms (:label :for "nickname") "Nickname")
+          (ms (:input :id "nickname"))
+          (ms :button "Login"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                          login-page                            ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-page login-page ()
+  (mc login-form))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                          users-page                            ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-page users-page ()
+  (m "div"
+     (m "h2" "Online users")
+     (apply #'m
+            "ol"
+            (mapcar (lambda (user)
+                      (m "li"
+                         (list :id (format nil "user_~A" user))
+                         user
+                         (m "button"
+                            (list :onclick (invite-for-game-handler user))
+                            "Invite for game")))
+                    *other-users*))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                           game-page                            ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-page game-page ()
+  (m "div#board"
+     "Game board"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                         page-switcher                          ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-component page-switcher ()
+  (cond
+    ((not *login-success*)
+     (mc login-page))
+    ((not *game*)
+     (mc users-page))
+    (*game*
+     (mc game-page))
+    (t (error "don't know which page to show"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                              app                               ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun app-aux (initial-vnode)
-  (plist2object
-   (list
-    :view
-    (lambda (vnode)
-      (m "div"
-         (ms (:h1 :class "text-2xl text-pink-500")
-             (ms (:a :href "/") "Othello Square"))
-         (unless *welcome-message*
-           (js-array*
-            (m "h2" "Please login with your nickname")
-            (ms (:form :onsubmit #'handle-login-submit)
-                (m "label" (list :for "nickname") "Nickname")
-                (m "input" (list :id "nickname"))
-                (m "button" "Login"))))
-         (when *nickname*
-           (m "div#message"
-              (list :data-testid "message")
-              *welcome-message*))
-         (when *other-users*
-           (m "div"
-              (m "h2" "Online users")
-              (apply #'m
-                     "ol"
-                     (mapcar (lambda (user)
-                               (m "li"
-                                  (list :id (format nil "user_~A" user))
-                                  user
-                                  (m "button"
-                                     (list :onclick (invite-for-game-handler user))
-                                     "Invite for game")))
-                             *other-users*))))
-         (when *pending-invite*
-           (m "div#game_invitation"
-              (m "h2"
-                 (format nil "~A invites you for a game!" *pending-invite*)
-                 (m "button"
-                    (list :onclick #'handle-game-invitation-accept)
-                    "Accept"))))
-         (when *game*
-           (m "div#board"
-              "Game board")))))))
+(define-component app-aux ()
+  (mc page-switcher))
 
-(defun app (initial-vnode)
-  (plist2object
-   (list
-    :view
-    (lambda (vnode)
-      (m #'app-aux)))))
+(define-component app ()
+  (mc app-aux))
 
 (defvar *app-mounted* nil)
 
