@@ -55,6 +55,9 @@ module KnowsFrontend
   end
 
   def sees_the_waiting_for_turn_message(other_user)
-    expect(page).to have_css("#game_message", text: "Waiting for #{other_user}'s turn")
+    expect(page).to have_css(
+      "#game_message",
+      text: "Waiting for #{other_user}'s turn",
+    )
   end
 end

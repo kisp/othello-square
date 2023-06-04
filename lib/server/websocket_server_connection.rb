@@ -1,7 +1,7 @@
 $connections = []
 
 class WebsocketServerConnection
-  attr_accessor :ws, :user, :get_list_of_users_was_handled
+  attr_accessor :ws, :user, :get_list_of_users_was_handled, :opponent
 
   class << self
     def by_user(user)
@@ -50,7 +50,14 @@ class WebsocketServerConnection
         .send_message([:game_invitation_from, self.user])
     in :accept_game_invitation, invitator
       send_message([:game_start_with, invitator, invitator])
-      self.class.by_user(invitator).send_message([:game_start_with, self.user, invitator])
+      self
+        .class
+        .by_user(invitator)
+        .send_message([:game_start_with, self.user, invitator])
+      self.opponent = self.class.by_user(invitator)
+      self.opponent.opponent = self
+    in :move_to, square
+      opponent.send_message([:move_to, square])
     else
       raise "message not matched: #{message.inspect}"
     end
