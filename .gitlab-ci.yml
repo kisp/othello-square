@@ -16,5 +16,5 @@ test:
   script:
     - make jscl-build-app >/dev/null 2>/dev/null
     - bundle exec rspec
-    - bundle exec cucumber --color --order random --tags "not @slow"
+    - env DEBUGXX=true bundle exec cucumber --color --order random --tags "not @slow"
     - env NODE_OPTIONS=--experimental-vm-modules npx jest
