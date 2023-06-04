@@ -5,7 +5,7 @@ $connections = {}
 class WebsocketConnection
   include RSpec::Matchers
 
-  attr_accessor :open, :logged_in, :last_message, :other_users
+  attr_accessor :open, :logged_in, :last_message, :other_users, :first_player
   attr_reader :ws, :user
 
   class << self
@@ -92,21 +92,48 @@ class WebsocketConnection
   end
 
   def game_start_received!(other_user)
-    message = [:game_start_with, other_user]
+    first_second = lambda { |x| x && x.is_a?(Array) && x[0..1] }
+    message = [:game_start_with, other_user, :first_player]
     wait_until(
       timeout: 1,
       message:
         "#{user} wants to get a message to start game with #{other_user}",
       interval: 0.1,
       debug: true,
-      timeout_expectation: lambda { expect(last_message).to eq(message) },
-    ) { last_message == message }
+      timeout_expectation:
+        lambda { expect(first_second.call(last_message)).to eq(message[0..1]) },
+    ) { first_second.call(last_message) == message[0..1] }
 
     self.last_message = nil
   end
 
   def inspect
     "#<connection user=#{user}>"
+  end
+
+  def sees_the_its_your_turn_message
+    expect(user).to eq(first_player)
+  end
+
+  def sees_the_waiting_for_turn_message(other_user)
+    expect(other_user).to eq(first_player)
+  end
+
+  def move_to(square)
+    send_message([:move_to, square])
+  end
+
+  def receive_move_to(square, _color)
+    message = [:move_to, square]
+    wait_until(
+      timeout: 1,
+      message: "#{user} wants to get a move to message to #{square}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation: lambda { expect(last_message).to eq(message) },
+    ) { last_message == message }
+
+    self.last_message = nil
   end
 
   private
@@ -149,7 +176,9 @@ class WebsocketConnection
           self.other_users = users
         in :game_invitation_from, _invitator
           nothing_to_do
-        in :game_start_with, _other_user
+        in :game_start_with, _other_user, first_player
+          self.first_player = first_player
+        in :move_to, _square
           nothing_to_do
         end
       end

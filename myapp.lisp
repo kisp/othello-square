@@ -10,7 +10,10 @@
 (defvar *welcome-message* nil)
 (defvar *other-users* nil)
 (defvar *pending-invite* nil)
-(defvar *game* nil)
+(defvar *game-board* nil)
+(defvar *game-opponent* nil)
+(defvar *game-first-player* nil)
+(defvar *game-current-player* nil)
 
 (defun send! (message)
   (websocket-send
@@ -33,8 +36,13 @@
     (:game-invitation-from
      (setq *pending-invite* (second message)))
     (:game-start-with
-     ;; TODO: (second message) is the other user
-     (setq *game* t))
+     (setq *game-board* (othello::initial-board)
+           *game-opponent* (second message)
+           *game-first-player* (third message)
+           *game-current-player* othello::+black+))
+    (:move-to
+     (destructuring-bind (square) (cdr message)
+       (handle-opponent-move square)))
     (t
      (error "Don't know how to handle-message: ~S"
             message)))
@@ -70,6 +78,19 @@
 (defun handle-game-invitation-accept (event)
   ((jscl::oget event "preventDefault"))
   (send! `(:accept-game-invitation ,*pending-invite*)))
+
+(defun move-to-handler (square)
+  (lambda (event)
+    ((jscl::oget event "preventDefault"))
+    (when (othello::legal-p square *game-current-player* *game-board*)
+      (othello::make-move square *game-current-player* *game-board*)
+      (setf *game-current-player* (othello::opponent *game-current-player*))
+      (send! `(:move-to ,square)))))
+
+(defun handle-opponent-move (square)
+  (when (othello::legal-p square *game-current-player* *game-board*)
+    (othello::make-move square *game-current-player* *game-board*)
+    (setf *game-current-player* (othello::opponent *game-current-player*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                         clog-handler                           ;;;
@@ -227,25 +248,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-component game-message ()
-  (ms (:div :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
-      "It's your turn"))
+  (ms (:div :id "game_message"
+            :class "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
+      (if (equal *nickname* *game-first-player*)
+          "It's your turn"
+          (format nil "Waiting for ~a's turn" *game-opponent*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                             square                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-component empty-square (legal-move-indicator)
-  (ms (:div :class "border border-black flex items-center justify-center")
-      (when legal-move-indicator
-        (ms (:div :class "border border-black rounded-full w-5/6 h-5/6")))))
+(define-component square-container (square)
+  (ms (:button
+       :id (format nil "square_~A" square)
+       :class "border border-black flex items-center justify-center"
+       :onclick (move-to-handler square))
+      children))
 
-(define-component black-square ()
-  (ms (:div :class "border border-black flex items-center justify-center")
-      (ms (:div :class "bp w-5/6 h-5/6"))))
+(define-component empty-square (square legal-move-indicator)
+  (mc (square-container :square square)
+    (when legal-move-indicator
+      (ms (:div :class "border border-black rounded-full w-5/6 h-5/6")))))
 
-(define-component white-square ()
-  (ms (:div :class "border border-black flex items-center justify-center")
-      (ms (:div :class "wp w-5/6 h-5/6"))))
+(define-component black-square (square)
+  (mc (square-container :square square)
+    (ms (:div :class "bp w-5/6 h-5/6"))))
+
+(define-component white-square (square)
+  (mc (square-container :square square)
+    (ms (:div :class "wp w-5/6 h-5/6"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                             board                              ;;;
@@ -253,19 +284,20 @@
 
 (define-component board ()
   (let* ((player othello::+black+)
-         (board (othello::initial-board))
-         (legal-moves (othello::legal-moves player board)))
+         (legal-moves (othello::legal-moves player *game-board*)))
     (ms (:div :class "border border-black bg-green-600 aspect-square grid grid-cols-8 max-h-screen")
         (apply #'js-array
                (othello::map-board-squares
                 (lambda (row col square)
-                  (case (othello::bref board square)
+                  (case (othello::bref *game-board* square)
                     ;; othello::+empty+
-                    (0 (mc (empty-square :legal-move-indicator (member square legal-moves))))
+                    (0 (mc (empty-square
+                            :square square
+                            :legal-move-indicator (member square legal-moves))))
                     ;; othello::+black+
-                    (1 (mc black-square))
+                    (1 (mc (black-square :square square)))
                     ;; othello::+white+
-                    (2 (mc white-square)))))))))
+                    (2 (mc (white-square :square square))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           game-page                            ;;;
@@ -273,6 +305,10 @@
 
 (define-page game-page ()
   (m "div#board"
+     (list :data-pieces-balance
+           (format nil "~A/~A"
+                   (count othello::+black+ *game-board*)
+                   (count othello::+white+ *game-board*)))
      (mc game-message)
      (mc board)))
 
@@ -284,9 +320,9 @@
   (cond
     ((not *login-success*)
      (mc login-page))
-    ((not *game*)
+    ((not *game-board*)
      (mc users-page))
-    (*game*
+    (*game-board*
      (mc game-page))
     (t (error "don't know which page to show"))))
 

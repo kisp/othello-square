@@ -18,7 +18,6 @@ Feature: A user invites another user for a game
     Then "Alice" can see that "Bob" is there
     Then "Bob" can see that "Alice" is there
 
-  Scenario: Alice receives a game invitation from Bob
     When "Bob" invites "Alice" to play a game
     Then "Alice" receives a game invitation from "Bob"
 
@@ -28,3 +27,19 @@ Feature: A user invites another user for a game
 
     Then it is "Bob" 's turn
     And "Alice" is waiting for "Bob" 's turn
+
+    Then "Bob" sees a pieces balance of "2/2"
+    And "Alice" sees a pieces balance of "2/2"
+
+  Scenario: Bob makes a first move and Alice replies
+    When "Bob" makes a move to "3,4"
+    Then "Alice" sees a "black" move to "3,4" from her opponent
+
+    And "Bob" sees a pieces balance of "4/1"
+    And "Alice" sees a pieces balance of "4/1"
+
+    When "Alice" makes a move to "5,3"
+    Then "Bob" sees a "white" move to "5,3" from his opponent
+
+    And "Bob" sees a pieces balance of "3/3"
+    And "Alice" sees a pieces balance of "3/3"

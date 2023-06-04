@@ -9,7 +9,7 @@ test-cucumber-all:
 dev:
 	bundle exec foreman start
 
-PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile\|fly.toml\|Dockerfile\|\.sh\|\.rspec\|\.gitignore\|jscl/\|\.el'
+PRETTIER_EXCLUDE := '\.envrc\|Gemfile.lock\|\.feature\|\.lisp\|Makefile\|fly.toml\|Dockerfile\|\.sh\|\.rspec\|\.gitignore\|jscl/\|\.el\|Procfile\|.dockerignore'
 
 prettier:
 	git ls-files \

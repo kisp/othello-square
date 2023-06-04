@@ -1,5 +1,5 @@
 @backend @em
-Feature: A user invites another user for a game
+Feature: A user makes a move and the other user sees it
 
   Background:
     Given no users are connected to the game server
@@ -10,7 +10,6 @@ Feature: A user invites another user for a game
     When "Jane" asks the server to get a list of users
     Then "Jane" can see that "Bob" is there
 
-  Scenario: Jane receives a game invitation from Bob
     When "Bob" invites "Jane" to play a game
     Then "Jane" receives a game invitation from "Bob"
     When "Jane" accepts the game invitation from "Bob"
@@ -19,3 +18,7 @@ Feature: A user invites another user for a game
 
     Then it is "Bob" 's turn
     And "Jane" is waiting for "Bob" 's turn
+
+  Scenario: Bob makes a first move
+    When "Bob" makes a move to "3,4"
+    Then "Jane" sees a "black" move to "3,4" from her opponent

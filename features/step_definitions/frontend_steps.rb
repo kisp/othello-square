@@ -13,3 +13,11 @@ end
 Then("{string} sees the welcome message {string}") do |session_name, message|
   as_user(session_name) { sees_the_welcome_message(message) }
 end
+
+Then("it is {string} 's turn") do |user|
+  as_user(user) { sees_the_its_your_turn_message }
+end
+
+Then("{string} is waiting for {string} 's turn") do |user, other_user|
+  as_user(user) { sees_the_waiting_for_turn_message(other_user) }
+end
