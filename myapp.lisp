@@ -89,6 +89,30 @@
   `(m ,(string-downcase name) (list ,@args) ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                       define-component                         ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro define-component (name args state &body body)
+  `(defun ,name (initial-vnode)
+     (let ,state
+       (plist2object
+        (list
+         :view
+         (lambda (vnode)
+           (let ((children (jscl::oget vnode "children"))
+                 ,@(mapcar
+                     (lambda (arg)
+                       (destructuring-bind (name default)
+                           (if (consp arg) arg (list arg nil))
+                         `(,name (or (jscl::oget vnode "attrs" ,(string-downcase name))
+                                     ,default))))
+                     args))
+             ;; if children are empty, it will be #()
+             (when (zerop (length children))
+               (setq children nil))
+             ,@body)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                            counter                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
