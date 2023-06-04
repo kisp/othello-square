@@ -135,16 +135,15 @@
     :view
     (lambda (vnode)
       (m "div"
-         (m "h1" (list :class "text-2xl text-pink-500")
-            (m "a" (list :href "/") "Othello Square"))
+         (ms (:h1 :class "text-2xl text-pink-500")
+             (ms (:a :href "/") "Othello Square"))
          (unless *welcome-message*
            (js-array*
             (m "h2" "Please login with your nickname")
-            (m "form"
-               (list :onsubmit #'handle-login-submit)
-               (m "label" (list :for "nickname") "Nickname")
-               (m "input" (list :id "nickname"))
-               (m "button" "Login"))))
+            (ms (:form :onsubmit #'handle-login-submit)
+                (m "label" (list :for "nickname") "Nickname")
+                (m "input" (list :id "nickname"))
+                (m "button" "Login"))))
          (when *nickname*
            (m "div#message"
               (list :data-testid "message")
