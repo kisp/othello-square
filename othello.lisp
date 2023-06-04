@@ -103,14 +103,25 @@
 . . . . . . . .
 ")
 
+(defun map-board-squares (fn &key after-row)
+  (let (result)
+    (loop for row from 1 to 8
+          do (loop for col from 1 to 8
+                   for square = (+ col (* 10 row))
+                   do (push (funcall fn row col square) result))
+          when after-row
+            do (funcall after-row))
+    (nreverse result)))
+
 (defun print-board (board)
-  (loop for row from 1 to 8
-        do (loop for col from 1 to 8
-                 for piece = (bref board (+ col (* 10 row)))
-                 do (format t "~C" (piece-name piece))
-                 unless (eql 8 col)
-                   do (format t " "))
-        do (format t "~%")))
+  (map-board-squares
+   (lambda (row col square)
+     (let ((piece (bref board square)))
+       (format t "~C" (piece-name piece))
+       (unless (eql 8 col)
+         (format t " "))))
+   :after-row (lambda ()
+                (format t "~%"))))
 
 (defun print-board-to-string (board)
   (with-output-to-string (*standard-output*)
