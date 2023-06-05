@@ -79,6 +79,7 @@ module KnowsFrontend
   end
 
   def sees_square_content(square, content)
+    visible = true
     case content
     in "@"
       content_class = "bp"
@@ -86,9 +87,10 @@ module KnowsFrontend
       content_class = "wp"
     in ""
       content_class = "ee"
+      visible = false
     in "+"
       content_class = "lm"
     end
-    expect(page).to have_css("#square_#{square.join("")} .#{content_class}")
+    expect(page).to have_css("#square_#{square.join("")} .#{content_class}", visible: visible)
   end
 end
