@@ -20,7 +20,7 @@ end
 if ENV["GITLAB_CI"]
   Capybara.javascript_driver = :selenium_chrome_headless_docker_friendly
 elsif ENV["HEADLESS"]&.downcase == "true"
-  Capybara.javascript_driver = :selenium_chrome_headless
+  Capybara.javascript_driver = :selenium_chrome
 else
   Capybara.javascript_driver = :selenium_chrome
 end
