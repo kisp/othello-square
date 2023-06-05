@@ -1,6 +1,7 @@
 When("I login as {string}") { |nickname| login_as(nickname) }
 
 When("{user} logs in with his/her username/nickname") do |nickname|
+  require 'pry'; binding.pry
   as_user(nickname) { login_as(nickname) }
 end
 

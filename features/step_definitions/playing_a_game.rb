@@ -33,6 +33,7 @@ def board_balance(board)
 end
 
 Given("{string} sees the board") do |user, board|
+  require 'pry'; binding.pry
   balance = board_balance(board)
   as_user(user) do
     sees_pieces_balance(balance)
