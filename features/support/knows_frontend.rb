@@ -10,7 +10,6 @@ module KnowsFrontend
 
   def asked_to_login_with_nickname
     expect(page).to have_css("h2", text: "Please login")
-    expect(page).not_to have_css("#message")
   end
 
   def login_as(nickname)
@@ -24,7 +23,7 @@ module KnowsFrontend
   end
 
   def sees_the_welcome_message(message)
-    expect(page).to have_css("#message", text: message)
+    expect(page).to have_css(".toast-message", text: message)
     expect(page).not_to have_css("h2", text: "Please login")
     expect(page).not_to have_css("input#nickname")
   end
@@ -43,7 +42,7 @@ module KnowsFrontend
   end
 
   def accept_game_invitation(invitator)
-    within("#game_invitation") { click_button("Accept") }
+    within(".game-invitation[data-invitator=#{invitator}]") { click_button("Accept") }
   end
 
   def game_start_received!(other_user)

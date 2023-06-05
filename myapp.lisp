@@ -5,9 +5,9 @@
 
 (defvar *ws* nil)
 
+(defvar *toast-messages* nil)
 (defvar *nickname* nil)
 (defvar *login-success* nil)
-(defvar *welcome-message* nil)
 (defvar *other-users* nil)
 (defvar *pending-invite* nil)
 (defvar *game-board* nil)
@@ -26,16 +26,29 @@
     (:please-tell-me-who-you-are
      (send! `(:login ,*nickname*)))
     (:logged-in
-     (setq *login-success* t
-           *welcome-message* (second message))
+     (add-toast-message (second message) :delay 1)
+     (setq *login-success* t)
      (send! `(:get-list-of-users)))
     (:users-present
      (setq *other-users*
            (map 'list #'jscl::js-to-lisp (second message))))
     (:user-entered
+     (add-toast-message (format nil "~A came online" (second message)))
      (push (second message) *other-users*))
     (:game-invitation-from
-     (setq *pending-invite* (second message)))
+     (setq *pending-invite* (second message))
+     (add-toast-message
+      (lambda (remove-message-thunk)
+        (ms (:div :class "game-invitation"
+                  :data-invitator *pending-invite*)
+            (ms (:h2 :class "text-xl mb-4")
+                (format nil "~A invites you for a game!" *pending-invite*))
+            (ms (:button :class "px-2 py-2 bg-pink-600 hover:bg-pink-700 text-white w-full"
+                         :onclick (lambda (event)
+                                    (funcall remove-message-thunk)
+                                    (handle-game-invitation-accept event)))
+                "Accept")))
+      :no-auto-close t))
     (:game-start-with
      (setq *game-board* (othello::initial-board)
            *game-opponent-nickname* (second message)
@@ -105,20 +118,6 @@
     (clog::clog message)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;                              mc                                ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmacro mc (name-and-args &body body)
-  (destructuring-bind (name &rest args)
-      (if (consp name-and-args) name-and-args (list name-and-args))
-    `(m (function ,name) (list ,@args) ,@body)))
-
-(defmacro ms (name-and-args &body body)
-  (destructuring-bind (name &rest args)
-      (if (consp name-and-args) name-and-args (list name-and-args))
-    `(m ,(string-downcase name) (list ,@args) ,@body)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                       define-component                         ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -184,31 +183,113 @@
       (ms :h1 (ms (:a :href "/") "Othello Square"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                        toast messages                          ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun make-toast-message (text &optional (id (princ-to-string (random 100000))))
+  (list :id id :text text))
+
+(defun add-toast-message (text &key delay no-auto-close)
+  (labels ((do-it ()
+             (let* ((message-id (princ-to-string (random 100000)))
+                    (remove-message-thunk (lambda () (remove-toast-message-by-id message-id)))
+                    (message-text (if (functionp text)
+                                      (funcall text remove-message-thunk)
+                                      text))
+                    (message (make-toast-message message-text message-id)))
+               (setf *toast-messages*
+                     (append *toast-messages* (list message)))
+               (unless no-auto-close
+                 (m-set-timeout 3 remove-message-thunk)))))
+    (if (null delay)
+        (do-it)
+        (m-set-timeout delay #'do-it))))
+
+(defun remove-toast-message-by-id (message-id)
+  (setq *toast-messages*
+        (remove-if (lambda (x)
+                     (equal (getf x :id) message-id))
+                   *toast-messages*)))
+
+(defun remove-toast-message (message)
+  (remove-toast-message-by-id (getf message :id)))
+
+(defun toast-message-close-handler (message)
+  (lambda (event)
+    (remove-toast-message message)))
+
+(defun toast-message-dom-id (message)
+  (format nil "toast_~A" (getf message :id)))
+
+(define-component toast-messages (messages)
+  (ms (:DIV :CLASS "fixed right-4 top-4")
+      (map 'vector
+           (lambda (message)
+             (mc (toast-message
+                  :key (getf message :id)
+                  :message message
+                  :onbeforeremove
+                  (lambda (vnode)
+                    ((jscl::oget vnode "dom" "classList" "add") "fade-out")
+                    (jscl::make-new #j:Promise
+                                    (lambda (resolve)
+                                      ((jscl::oget vnode "dom" "addEventListener")
+                                       "animationend" resolve)))))))
+           messages)))
+
+(define-component toast-message-icon ()
+  (ms (:DIV :CLASS
+            "inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-pink-500 bg-pink-100 rounded-lg dark:bg-blue-800 dark:text-blue-200")
+      (ms (:SVG :ARIA-HIDDEN "true" :CLASS "w-5 h-5" :FILL "currentColor" :VIEWBOX "0 0 20 20")
+          (ms (:PATH :FILL-RULE "evenodd"
+                     :D "M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
+                     :CLIP-RULE "evenodd")))
+      (ms (:SPAN :CLASS "sr-only")
+          "Fire icon")))
+
+(define-component toast-message-close-button (message)
+  (let ((dom-id (toast-message-dom-id message)))
+    (ms (:BUTTON :TYPE "button"
+                 :CLASS "ml-auto -mx-1.5 -my-1.5 bg-gray-100 text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-300 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
+                 :DATA-DISMISS-TARGET (format nil "#~A" dom-id)
+                 :ARIA-LABEL "Close"
+                 :onclick (toast-message-close-handler message))
+        (ms (:SPAN :CLASS "sr-only")
+            "Close")
+        (ms (:SVG :ARIA-HIDDEN "true" :CLASS "w-5 h-5" :FILL "currentColor" :VIEWBOX
+                  "0 0 20 20")
+
+            (ms (:PATH :FILL-RULE "evenodd" :D
+                       "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                       :CLIP-RULE "evenodd"))))))
+
+(define-component toast-message (message)
+  (let ((dom-id (toast-message-dom-id message)))
+    (ms (:DIV
+         :ID dom-id
+         :CLASS "toast-message fade-in mb-4 flex w-full max-w-xs p-4 text-black bg-gray-100 rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
+         :ROLE "alert")
+        (mc toast-message-icon)
+        (ms (:DIV :CLASS "ml-3 text-xl font-normal")
+            (getf message :text))
+        (mc (toast-message-close-button :message message)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                        default-layout                          ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-component default-layout ()
   (mc initial-wrapper
-    (mc navbar)
-    (mc main-container
-      (ms :div
-          (when *welcome-message*
-            (m "div#message"
-               (list :data-testid "message")
-               *welcome-message*))
-          (when *pending-invite*
-            (m "div#game_invitation"
-               (m "h2"
-                  (format nil "~A invites you for a game!" *pending-invite*)
-                  (m "button"
-                     (list :onclick #'handle-game-invitation-accept)
-                     "Accept"))))
-          children))))
+      (mc navbar)
+      (mc (toast-messages :messages *toast-messages*))
+      (mc main-container
+          (ms :div
+              children))))
 
 (defmacro define-page (name args &body body)
   `(define-component ,name ,args
      (mc default-layout
-       ,@body)))
+         ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                          login-form                            ;;;
@@ -303,17 +384,17 @@
 
 (define-component empty-square (square legal-move-indicator)
   (mc (square-container :square square)
-    (if legal-move-indicator
-        (ms (:div :class "lm border border-black rounded-full w-5/6 h-5/6"))
-        (ms (:div :class "ee")))))
+      (if legal-move-indicator
+          (ms (:div :class "lm border border-black rounded-full w-5/6 h-5/6"))
+          (ms (:div :class "ee")))))
 
 (define-component black-square (square)
   (mc (square-container :square square)
-    (ms (:div :class "bp w-5/6 h-5/6"))))
+      (ms (:div :class "bp w-5/6 h-5/6"))))
 
 (define-component white-square (square)
   (mc (square-container :square square)
-    (ms (:div :class "wp w-5/6 h-5/6"))))
+      (ms (:div :class "wp w-5/6 h-5/6"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                             board                              ;;;
