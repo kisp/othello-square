@@ -17,6 +17,10 @@
            #:m-render
            #:m-mount
            #:m-redraw
+           #:m-set-timeout
+           #:m-set-interval
+           #:mc
+           #:ms
            #:js-array
            #:js-array*
            #:range))
@@ -213,6 +217,30 @@
 
 (defun m-redraw ()
   (funcall (jscl::js-inline "m.redraw")))
+
+(defun m-set-timeout (seconds fn)
+  (#j:setTimeout
+   (lambda ()
+     (funcall fn)
+     (m-redraw))
+   (* 1000 seconds)))
+
+(defun m-set-interval (seconds fn)
+  (#j:setInterval
+   (lambda ()
+     (funcall fn)
+     (m-redraw))
+   (* 1000 seconds)))
+
+(defmacro mc (name-and-args &body body)
+  (destructuring-bind (name &rest args)
+      (if (consp name-and-args) name-and-args (list name-and-args))
+    `(m (function ,name) (list ,@args) ,@body)))
+
+(defmacro ms (name-and-args &body body)
+  (destructuring-bind (name &rest args)
+      (if (consp name-and-args) name-and-args (list name-and-args))
+    `(m ,(string-downcase name) (list ,@args) ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                             range                              ;;;
