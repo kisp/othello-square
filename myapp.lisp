@@ -391,7 +391,28 @@
     (m-mount elt (jscl::js-inline "null"))
     (jscl::oset "" elt "innerHTML")))
 
-(defun exports-for-js ()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                    TODO: just for testing                      ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; this works:
+
+;; [14] pry(#<Object>)> as_user(nickname) { page.evaluate_script('exports_for_js().readBoard()') }.first(20)
+;; => [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+;; [15] pry(#<Object>)>
+
+;; [20] pry(#<Object>)> myboard = as_user(nickname) { page.evaluate_script('exports_for_js().readBoard()') }
+
+;; [34] pry(#<Object>)> as_user(nickname) { page.evaluate_script("exports_for_js().writeBoard(#{myboard.to_json()})") }; nil
+;; => nil
+
+(defun read-board ()
+  (apply #'js-array (map 'list #'identity *game-board*)))
+
+(defun write-board (x)
+  (setq *game-board* x))
+
+(defun %exports-for-js ()
   (#j:console:log "exports-for-js called")
   (obj-literal
    :|runAllTestsJest| #'mini-fiveam:run-all-tests-jest
@@ -399,4 +420,9 @@
    :|unmountApp| #'unmount-app
    :fact #'fact
    :|getBoolFromJs| #'get-bool-from-js
-   :|maxViaJsInline| #'max-via-js-inline))
+   :|maxViaJsInline| #'max-via-js-inline
+   :|readBoard| #'read-board
+   :|writeBoard| #'write-board))
+
+(defun exports-for-js ()
+  (%exports-for-js))
