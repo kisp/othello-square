@@ -58,6 +58,8 @@ class WebsocketServerConnection
       self.opponent.opponent = self
     in :move_to, square
       opponent.send_message([:move_to, square])
+    in :ping, _
+      send_message([:pong])
     else
       raise "message not matched: #{message.inspect}"
     end
