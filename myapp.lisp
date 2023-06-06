@@ -67,7 +67,7 @@
 
 (defun open-websocket-with-handlers ()
   (open-websocket (ws-url)
-                  :log-each-event nil
+                  :log-each-event t
                   :on-message
                   (lambda (event)
                     (handle-message
