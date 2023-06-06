@@ -32,7 +32,7 @@ class WebsocketServerConnection
 
     ws.on :close do |event|
       dbg ["SERVER", :close, event.code, event.reason]
-      self.ws = nil
+      $connections = $connections.reject { |c| c == self }
     end
   end
 
@@ -82,11 +82,6 @@ class WebsocketServerConnection
 
   def tell_other_users_that_we_have_a_new_user
     dbg ["SERVER", "tell_other_users_that_we_have_a_new_user", formatted_user]
-    dbg [
-          "SERVER",
-          "tell_other_users_that_we_have_a_new_user",
-          other_connections,
-        ]
     other_connections_get_list_of_users_was_handled.each do |conn|
       conn.send_message([:user_entered, user])
     end

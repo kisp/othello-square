@@ -97,4 +97,8 @@ module KnowsFrontend
       visible: visible,
     )
   end
+
+  def close_browser_window
+    page.reset!
+  end
 end
