@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "dark",
   content: ["./public/*.html", "./*.lisp"],
   theme: {
     screens: {
