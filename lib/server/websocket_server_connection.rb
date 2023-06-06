@@ -56,6 +56,7 @@ class WebsocketServerConnection
         .send_message([:game_start_with, self.user, invitator])
       self.opponent = self.class.by_user(invitator)
       self.opponent.opponent = self
+      tell_other_users_that_two_are_playing_together(self.user, invitator)
     in :move_to, square
       opponent.send_message([:move_to, square])
     in :ping, _
@@ -85,6 +86,20 @@ class WebsocketServerConnection
     other_connections_get_list_of_users_was_handled.each do |conn|
       conn.send_message([:user_entered, user])
     end
+  end
+
+  def tell_other_users_that_two_are_playing_together(user, other_user)
+    dbg [
+          "SERVER",
+          "tell_other_users_that_two_are_playing_together",
+          user,
+          other_user,
+        ]
+    other_connections_get_list_of_users_was_handled
+      .reject { |conn| conn.user == user || conn.user == other_user }
+      .each do |conn|
+        conn.send_message([:couple_starts_game, user, other_user])
+      end
   end
 
   def send_message(message)

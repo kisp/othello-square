@@ -16,6 +16,7 @@
 (defvar *game-opponent-nickname* nil)
 (defvar *game-current-player* nil)
 (defvar *game-my-color* nil)
+(defvar *ongoing-games* nil)
 
 (defun send! (message)
   (utils::websocket-send
@@ -58,6 +59,9 @@
            *game-my-color* (if (equal *game-first-player-nickname* *nickname*)
                                othello::+black+
                                othello::+white+)))
+    (:couple-starts-game
+     (destructuring-bind (user partner) (cdr message)
+       (push (list user partner) *ongoing-games*)))
     (:move-to
      (destructuring-bind (square) (cdr message)
        (handle-opponent-move square)))
@@ -67,6 +71,16 @@
      (error "Don't know how to handle-message: ~S"
             message)))
   (m-redraw))
+
+(defun user-currently-playing-with (user)
+  (let ((game (find-if (lambda (game)
+                         (or (equal user (first game))
+                             (equal user (second game))))
+                       *ongoing-games*)))
+    (when game
+      (if (equal user (first game))
+          (second game)
+          (first game)))))
 
 (defun send-ping ()
   (clog::clog "Sending ping...")
@@ -410,6 +424,17 @@
   (ms (:DIV :CLASS "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
       (ms (:H2 :CLASS "text-2xl") "Players")))
 
+(define-component users-page-invite-for-game-button (on-invite-for-game)
+  (ms (:button
+       :CLASS "inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-pink-600 rounded-lg hover:bg-pink-700 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
+       :onclick on-invite-for-game)
+      "Invite for game"
+      (ms (:SVG :ARIA-HIDDEN "true" :CLASS "w-4 h-4 ml-2 -mr-1" :FILL "currentColor"
+                :VIEWBOX "0 0 20 20")
+          (ms (:PATH :FILL-RULE "evenodd" :D
+                     "M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                     :CLIP-RULE "evenodd")))))
+
 (define-component users-page-user-card (user on-invite-for-game)
   (ms (:DIV
        :id (format nil "user_~A" user)
@@ -417,16 +442,11 @@
       (ms (:H5 :CLASS "mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white")
           user)
       (ms (:P :CLASS "mb-3 font-normal text-gray-700 dark:text-gray-400")
-          "Played games so far: 34")
-      (ms (:button
-           :CLASS "inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-pink-600 rounded-lg hover:bg-pink-700 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
-           :onclick on-invite-for-game)
-          "Invite for game"
-          (ms (:SVG :ARIA-HIDDEN "true" :CLASS "w-4 h-4 ml-2 -mr-1" :FILL "currentColor"
-                    :VIEWBOX "0 0 20 20")
-              (ms (:PATH :FILL-RULE "evenodd" :D
-                         "M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                         :CLIP-RULE "evenodd"))))))
+          "Played games so far: 0")
+      (let ((partner (user-currently-playing-with user)))
+        (if partner
+            (format nil "Currently playing a game with ~A" partner)
+            (mc (users-page-invite-for-game-button :on-invite-for-game on-invite-for-game))))))
 
 (define-page users-page ()
   (ms :div
