@@ -33,6 +33,19 @@ module KnowsFrontend
     expect(page).to have_css("#user_#{other_user}")
   end
 
+  def can_see_that_other_user_is_currently_not_playing!(other_user)
+    expect(page).to have_css("h2", text: "Players")
+    expect(page).to have_css("#user_#{other_user}", text: "Invite for game")
+  end
+
+  def can_see_that_other_user_is_currently_playing!(other_user, partner)
+    expect(page).to have_css("h2", text: "Players")
+    expect(page).to have_css(
+      "#user_#{other_user}",
+      text: "Currently playing a game with #{partner}",
+    )
+  end
+
   def invite_for_game(invitee)
     within("#user_#{invitee}") { click_button("Invite for game") }
   end
