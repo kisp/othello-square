@@ -41,6 +41,8 @@ class WebsocketServerConnection
     case message
     in :login, user
       handle_login(user)
+    in :logout, user
+      handle_logout(user)
     in :get_list_of_users, _
       handle_get_list_of_users
     in :invite_for_game, invitee
@@ -76,6 +78,11 @@ class WebsocketServerConnection
     tell_other_users_that_we_have_a_new_user
   end
 
+  def handle_logout(user)
+    send_message([:logged_out])
+    tell_other_users_that_this_user_has_left
+  end
+
   def on_login(&block)
     @on_login << block
   end
@@ -84,6 +91,13 @@ class WebsocketServerConnection
     dbg ["SERVER", "tell_other_users_that_we_have_a_new_user", formatted_user]
     other_connections_get_list_of_users_was_handled.each do |conn|
       conn.send_message([:user_entered, user])
+    end
+  end
+
+  def tell_other_users_that_this_user_has_left
+    dbg ["SERVER", "tell_other_users_that_this_user_has_left", formatted_user]
+    other_connections_get_list_of_users_was_handled.each do |conn|
+      conn.send_message([:user_left, user])
     end
   end
 

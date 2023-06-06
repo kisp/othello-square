@@ -49,6 +49,15 @@ class WebsocketConnection
     end
   end
 
+  def logout_as(nickname)
+    send_message([:logout, user])
+
+    wait_until(timeout: 1, message: "Waiting for not :logged_in", debug: true) do
+      !logged_in
+    end
+    self.last_message = nil
+  end
+
   def get_list_of_users
     send_message([:get_list_of_users])
     wait_until(
@@ -68,6 +77,17 @@ class WebsocketConnection
       timeout_expectation:
         lambda { expect(other_users).to include(other_user) },
     ) { other_users.include?(other_user) }
+  end
+
+  def can_see_that_other_user_is_not_there!(other_user)
+    wait_until(
+      timeout: 1,
+      message: "#{user} does not want to see #{other_user}",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation:
+        lambda { expect(other_users).not_to include(other_user) },
+    ) { !other_users.include?(other_user) }
   end
 
   def invite_for_game(invitee)
@@ -174,6 +194,8 @@ class WebsocketConnection
       case message
       in :user_entered, user
         other_users << user
+      in :user_left, user
+        self.other_users = other_users.reject { |u| u == user } if other_users
       else
         message_handled = false
       end
@@ -189,6 +211,8 @@ class WebsocketConnection
           nothing_to_do
         in :logged_in, _
           self.logged_in = true
+        in :logged_out, _
+          self.logged_in = false
         in :users_present, users
           self.other_users = users
         in :game_invitation_from, _invitator

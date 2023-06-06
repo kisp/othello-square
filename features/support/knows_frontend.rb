@@ -33,6 +33,11 @@ module KnowsFrontend
     expect(page).to have_css("#user_#{other_user}")
   end
 
+  def can_see_that_other_user_is_not_there!(other_user)
+    expect(page).to have_css("h2", text: "Players")
+    expect(page).not_to have_css("#user_#{other_user}")
+  end
+
   def invite_for_game(invitee)
     within("#user_#{invitee}") { click_button("Invite for game") }
   end

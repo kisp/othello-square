@@ -5,3 +5,7 @@ end
 Then("{string} can see that {string} is there") do |user, other_user|
   as_user(user) { can_see_that_other_user_is_there!(other_user) }
 end
+
+Then('{user} can see that {user} is not there') do |user, other_user|
+  as_user(user) { can_see_that_other_user_is_not_there!(other_user) }
+end
