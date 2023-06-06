@@ -4,6 +4,7 @@
 (in-package :myapp)
 
 (defvar *ws* nil)
+(defvar *ws-keep-alive-timer* nil)
 
 (defvar *toast-messages* nil)
 (defvar *nickname* nil)
@@ -17,7 +18,7 @@
 (defvar *game-my-color* nil)
 
 (defun send! (message)
-  (websocket-send
+  (utils::websocket-send
    *ws*
    (format-message-as-json message)))
 
@@ -60,19 +61,66 @@
     (:move-to
      (destructuring-bind (square) (cdr message)
        (handle-opponent-move square)))
+    (:pong
+     (clog::clog "pong received!"))
     (t
      (error "Don't know how to handle-message: ~S"
             message)))
   (m-redraw))
 
+(defun send-ping ()
+  (clog::clog "Sending ping...")
+  (send! '(:ping)))
+
 (defun open-websocket-with-handlers ()
-  (open-websocket (ws-url)
-                  :log-each-event t
-                  :on-message
-                  (lambda (event)
-                    (handle-message
-                     (parse-json-message
-                      (jscl::oget event "data"))))))
+  (jscl::make-new
+   #j:Promise
+   (jscl::lisp-to-js
+    (lambda (resolve reject)
+      (setq *ws*
+            (utils::open-websocket
+             (ws-url)
+             :log-each-event t
+             :on-open
+             (lambda (event)
+               (setq *ws-keep-alive-timer*
+                     (#j:setInterval #'send-ping
+                                     (* 30 1000)))
+               (funcall resolve *ws*))
+             :on-error
+             (lambda (event)
+               (funcall reject event))
+             :on-message
+             (lambda (event)
+               (handle-message
+                (parse-json-message
+                 (jscl::oget event "data"))))
+             :on-close
+             (lambda (event)
+               (clog::clog "websocket was closed!")
+               (when *ws-keep-alive-timer*
+                 (#j:clearInterval *ws-keep-alive-timer*)
+                 (setq *ws-keep-alive-timer* nil))
+               (setq *ws* nil))))))))
+
+(defun close-websocket ()
+  (jscl::make-new
+   #j:Promise
+   (jscl::lisp-to-js
+    (lambda (resolve reject)
+      (if (not *ws*)
+          (funcall resolve nil)
+          (progn
+            ((jscl::oget *ws* "addEventListener") "close"
+             (lambda (event)
+               (funcall resolve t)))
+            (utils::close-websocket *ws*)))))))
+
+(defun reopen-websocket ()
+  (let ((promise (close-websocket)))
+    ((jscl::oget promise "then")
+     (lambda (value)
+       (open-websocket-with-handlers)))))
 
 (defun get-nickname-from-input-field ()
   (let* ((elt (jscl::js-inline "document.getElementById('nickname')"))
@@ -85,7 +133,19 @@
     (unless (or (equal nickname "")
                 (every (lambda (char) (char= char #\space)) nickname))
       (setq *nickname* nickname)
-      (setq *ws* (open-websocket-with-handlers)))))
+      (let ((promise
+              ;; will assign *ws* and *ws-keep-alive-timer*
+              (open-websocket-with-handlers)))
+        (setq promise
+              ((jscl::oget promise "then")
+               (lambda (value)
+                 (clog::clog "Connected successfully!" value))))
+        (setq promise
+              ((jscl::oget promise "catch")
+               (lambda (value)
+                 (clog::cerror "Failed to connect!")
+                 (add-toast-message "Failed to connect!")
+                 (m-redraw))))))))
 
 (defun invite-for-game-handler (invitee)
   (lambda (event)

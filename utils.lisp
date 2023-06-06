@@ -3,9 +3,9 @@
   (:export #:remove-last-char
            #:add-event-listener
            #:ws-url
-           #:open-websocket
-           #:websocket-send
-           #:close-websocket
+           ;; #:open-websocket
+           ;; #:websocket-send
+           ;; #:close-websocket
            #:obj-literal
            #:fact
            #:get-bool-from-js

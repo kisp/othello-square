@@ -136,6 +136,23 @@ class WebsocketConnection
     self.last_message = nil
   end
 
+  def send_ping
+    send_message([:ping])
+  end
+
+  def pong_received!
+    message = [:pong, nil]
+    wait_until(
+      timeout: 1,
+      message: "#{user} wants to get a pong message",
+      interval: 0.1,
+      debug: true,
+      timeout_expectation: lambda { expect(last_message).to eq(message) },
+    ) { last_message == message }
+
+    self.last_message = nil
+  end
+
   private
 
   def connect
@@ -179,6 +196,8 @@ class WebsocketConnection
         in :game_start_with, _other_user, first_player
           self.first_player = first_player
         in :move_to, _square
+          nothing_to_do
+        in :pong, _
           nothing_to_do
         end
       end
