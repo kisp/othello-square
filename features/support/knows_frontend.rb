@@ -42,7 +42,9 @@ module KnowsFrontend
   end
 
   def accept_game_invitation(invitator)
-    within(".game-invitation[data-invitator=#{invitator}]") { click_button("Accept") }
+    within(".game-invitation[data-invitator=#{invitator}]") do
+      click_button("Accept")
+    end
   end
 
   def game_start_received!(other_user)
@@ -90,6 +92,9 @@ module KnowsFrontend
     in "+"
       content_class = "lm"
     end
-    expect(page).to have_css("#square_#{square.join("")} .#{content_class}", visible: visible)
+    expect(page).to have_css(
+      "#square_#{square.join("")} .#{content_class}",
+      visible: visible,
+    )
   end
 end
