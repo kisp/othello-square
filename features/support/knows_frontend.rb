@@ -29,7 +29,7 @@ module KnowsFrontend
   end
 
   def can_see_that_other_user_is_there!(other_user)
-    expect(page).to have_css("h2", text: "Online users")
+    expect(page).to have_css("h2", text: "Players")
     expect(page).to have_css("#user_#{other_user}")
   end
 

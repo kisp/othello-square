@@ -406,19 +406,39 @@
 ;;;                          users-page                            ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define-component users-page-header ()
+  (ms (:DIV :CLASS "border-2 border-black rounded bg-gray-100 p-4 my-4 text-center md:text-xl")
+      (ms (:H2 :CLASS "text-2xl") "Players")))
+
+(define-component users-page-user-card (user on-invite-for-game)
+  (ms (:DIV
+       :id (format nil "user_~A" user)
+       :CLASS "max-w-sm p-6 bg-gray-100 border-2 border-black rounded-lg shadow dark:bg-gray-800 dark:border-gray-700")
+      (ms (:H5 :CLASS "mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white")
+          user)
+      (ms (:P :CLASS "mb-3 font-normal text-gray-700 dark:text-gray-400")
+          "Played games so far: 34")
+      (ms (:button
+           :CLASS "inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-pink-600 rounded-lg hover:bg-pink-700 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
+           :onclick on-invite-for-game)
+          "Invite for game"
+          (ms (:SVG :ARIA-HIDDEN "true" :CLASS "w-4 h-4 ml-2 -mr-1" :FILL "currentColor"
+                    :VIEWBOX "0 0 20 20")
+              (ms (:PATH :FILL-RULE "evenodd" :D
+                         "M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                         :CLIP-RULE "evenodd"))))))
+
 (define-page users-page ()
-  (m "div"
-     (m "h2" "Online users")
-     (apply #'m
-            "ol"
-            (mapcar (lambda (user)
-                      (m "li"
-                         (list :id (format nil "user_~A" user))
-                         user
-                         (m "button"
-                            (list :onclick (invite-for-game-handler user))
-                            "Invite for game")))
-                    *other-users*))))
+  (ms :div
+      (mc users-page-header)
+      (ms (:div :class "grid gap-4 sm:grid-cols-2 md:grid-cols-3")
+          (map 'vector
+               (lambda (user)
+                 (mc (users-page-user-card
+                      :key user
+                      :user user
+                      :on-invite-for-game (invite-for-game-handler user))))
+               *other-users*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                         game-message                           ;;;
