@@ -92,4 +92,8 @@ module KnowsFrontend
     end
     expect(page).to have_css("#square_#{square.join("")} .#{content_class}", visible: visible)
   end
+
+  def close_browser_window
+    page.reset!
+  end
 end
