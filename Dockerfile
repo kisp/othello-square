@@ -37,4 +37,5 @@ COPY --chown=ruby:ruby . .
 
 # Start the server
 EXPOSE 8080
+ENV DEBUGXX true
 CMD ["bundle", "exec", "rackup", "-Ilib", "--host", "0.0.0.0", "--port", "8080"]
