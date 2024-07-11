@@ -1,0 +1,12 @@
+diff --git a/public/index.html b/public/index.html
+index bc1d988..e6d7e86 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -31,6 +31,6 @@
+       window.m = m;
+       window.jscl = jscl;
+     </script>
+-    <script src="http://localhost:9876/skewer"></script>
++    <script src="http://myhostname.local:9876/skewer"></script>
+   </body>
+ </html>

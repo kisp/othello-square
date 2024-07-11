@@ -1,0 +1,189 @@
+diff --git a/myapp.lisp b/myapp.lisp
+index ed27174..9d2664a 100644
+--- a/myapp.lisp
++++ b/myapp.lisp
+@@ -1,5 +1,5 @@
+ (defpackage :myapp
+-  (:use :cl :m-macro :utils))
++  (:use :cl :m-macro :utils :clog))
+ 
+ (in-package :myapp)
+ 
+@@ -70,56 +70,134 @@
+   ((jscl::oget event "preventDefault"))
+   (send! `(:accept-game-invitation ,*pending-invite*)))
+ 
+-(defun app-aux (&rest args)
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++;;;                            navbar                              ;;;
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++
++(defun navbar (initial-vnode)
++  (plist2object
++   (list
++    :view
++    (lambda (vnode)
++      (m "header"
++         (list :class "text-white text-xl md:text-2xl bg-pink-700 p-2 shadow-lg flex items-center")
++         (m "h1" (m "a" (list :href "/") "Othello Square")))))))
++
++(defun mybutton (initial-vnode)
++  (plist2object
++   (list
++    :view
++    (lambda (vnode)
++      (m "div.p-8"
++         (m "button"
++            (if (jscl::oget vnode "attrs" "green")
++                (list
++                 :class "p-8 bg-green-500")
++                (list
++                 :class "text-4xl bg-pink-100 border p-8 border-8 border-pink-500 rounded-full hover:bg-green-500"
++                 :onclick (lambda (event) (clog event))))
++            (ecase (jscl::oget vnode "attrs" "green")
++              (:foo (princ-to-string (jscl::oget vnode "attrs" "text")))
++              (:bar (princ-to-string :bar))
++              (:xxx (princ-to-string :xxx)))))))))
++
++(defun wrapper (initial-vnode)
++  (plist2object
++   (list
++    :view
++    (lambda (vnode)
++      (m "div"
++         (list :class "border-2 border-black")
++         (jscl::oget vnode "children"))))))
++
++(defvar comp-with-hooks
++  (plist2object
++   (list :oninit (lambda (vnode) (clog::clog "DOM created"))
++         :view (lambda (vnode)
++                 (clog::clog "view called")
++                 (m "div" (list :onclick (lambda (event))) "hello")))))
++
++(defun counter (initial-vnode)
++  (let ((count 10))
++    (clog "COUNTER CONSTRUCTOR CALLED")
++    (plist2object
++     (list
++      :oninit (lambda (vnode) (clog::clog "init counter component"))
++      :onremove (lambda (vnode) (clog::clog "remove counter component"))
++      :onbeforeupdate (lambda (vnode old)
++                        (clog::clog "ONBEFOREUPDATE")
++                        (clog::clog old)
++                        (clog::clog vnode)
++                        t)
++      :view
++      (lambda (vnode)
++        (clog::clog "VIEW CALLED")
++        (m "div.text-8xl.p-8.m-8.border-2"
++           (m "div" count)
++           (m "button.border.bg-blue-500.rounded-full.hover:bg-blue-600"
++              (list :onclick (lambda (event) (incf count) (clog::clog-lisp count)))
++              "1+")))))))
++
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++;;;                              app                               ;;;
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++
++(defun app-aux (initial-vnode)
+   (plist2object
+    (list
+     :view
+-    (lambda (&rest args)
++    (lambda (vnode)
+       (m "div"
+-         (m "h1" (list :class "text-2xl text-pink-500")
+-            (m "a" (list :href "/") "Othello Square"))
+-         (unless *welcome-message*
+-           (js-array*
+-            (m "h2" "Please login with your nickname")
+-            (m "form"
+-               (list :onsubmit #'handle-login-submit)
+-               (m "label" (list :for "nickname") "Nickname")
+-               (m "input" (list :id "nickname"))
+-               (m "button" "Login"))))
+-         (when *nickname*
+-           (m "div#message"
+-              (list :data-testid "message")
+-              *welcome-message*))
+-         (when *other-users*
+-           (m "div"
+-              (m "h2" "Online users")
+-              (apply #'m
+-                     "ol"
+-                     (mapcar (lambda (user)
+-                               (m "li"
+-                                  (list :id (format nil "user_~A" user))
+-                                  user
+-                                  (m "button"
+-                                     (list :onclick (invite-for-game-handler user))
+-                                     "Invite for game")))
+-                             *other-users*))))
+-         (when *pending-invite*
+-           (m "div#game_invitation"
+-              (m "h2"
+-                 (format nil "~A invites you for a game!" *pending-invite*)
+-                 (m "button"
+-                    (list :onclick #'handle-game-invitation-accept)
+-                    "Accept"))))
+-         (when *game*
+-           (m "div#board"
+-              "Game board")))))))
+-
+-(defun app ()
++         (list :class "bg-gray-400 min-h-screen")
++         (m #'navbar)
++         (m "div"
++            (m #'counter)
++            (m #'wrapper
++               (m #'mybutton (list :text "Huhu 123" :green :xxx))
++               (m #'counter))
++            (unless *welcome-message*
++              (js-array*
++               (m "h2" "Please login with your nickname")
++               (m "form"
++                  (list :onsubmit #'handle-login-submit)
++                  (m "label" (list :for "nickname") "Nickname")
++                  (m "input" (list :id "nickname"))
++                  (m "button" "Login"))))
++            (when *nickname*
++              (m "div#message"
++                 (list :data-testid "message")
++                 *welcome-message*))
++            (when *other-users*
++              (m "div"
++                 (m "h2" "Online users")
++                 (apply #'m
++                        "ol"
++                        (mapcar (lambda (user)
++                                  (m "li"
++                                     (list :id (format nil "user_~A" user))
++                                     user
++                                     (m "button"
++                                        (list :onclick (invite-for-game-handler user))
++                                        "Invite for game")))
++                                *other-users*))))
++            (when *pending-invite*
++              (m "div#game_invitation"
++                 (m "h2"
++                    (format nil "~A invites you for a game!" *pending-invite*)
++                    (m "button"
++                       (list :onclick #'handle-game-invitation-accept)
++                       "Accept"))))
++            (when *game*
++              (m "div#board"
++                 "Game board"))))))))
++
++(defun app (initial-vnode)
+   (plist2object
+    (list
+     :view
+-    (lambda (&rest args)
+-      (m (symbol-function 'app-aux))))))
++    (lambda (vnode)
++      ;; (m #'app-aux)
++      (m #'counter)))))
+ 
+ (defvar *app-mounted* nil)
+ 
